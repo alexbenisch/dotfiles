@@ -26,7 +26,7 @@ bindkey '^R' fzf-history-widget
 # ~~~~~~~~~~~~~~~ Path configuration ~~~~~~~~~~~~~~~~~~~~~~~~
 
 setopt extended_glob null_glob
-# Mit setzt du eine flexiblere Dateisuche und vermeidest unerwartete Zeichenketten, 
+# Mit setzt du eine flexiblere Dateisuche und vermeidest unerwartete Zeichenketten,
 # wenn keine Dateien gefunden werden. Ideal für Skripte und effizientes Arbeiten in der Shell.
 
 path=(
@@ -93,7 +93,7 @@ export DOTFILES="$GHREPOS/dotfiles"
 export SCRIPTS="$DOTFILES/scripts"
 export NEXTCLOUD="$HOME/Nextcloud/"
 #export ZETTELKASTEN="$HOME/Zettelkasten"
-
+#export STOW_TARGET=~/.config/
 
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
@@ -106,33 +106,38 @@ alias devpod="devpod-cli"
 export ANTHROPIC_API_KEY=$(pass show api_keys/anthropic_api_key)
 export OPENAI_API_KEY=$(pass show api_keys/openai_api_key)
 export PATH="${PATH}:/home/alex/bin"
-#export PATH= 
+#export PATH=
 export KUBECONFIG=/home/alex/.kube/config
 
 
 # ~~~~~~~~~~~~~~~ Completion ~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 fpath+=~/.zfunc
 
-if type brew &>/dev/null; then
-    FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
-fi
+zstyle ':completion:*' menu select
 
 autoload -Uz compinit
 compinit -u
 
-zstyle ':completion:*' menu select
+# ~~~~~~~~~~~~~~~ Sourcing ~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+source <(fzf --zsh)
 
-
-
-
-
-
-
-
-
+#eval "$(direnv hook zsh)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# ~~~~~~~~~~~~~~~ Misc ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+fpath+=~/.zfunc; autoload -Uz compinit; compinit
+
+
+
+
+
+
+
+
+
