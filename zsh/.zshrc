@@ -108,7 +108,7 @@ export OPENAI_API_KEY=$(pass show api_keys/openai_api_key)
 export PATH="${PATH}:/home/alex/bin"
 #export PATH=
 export KUBECONFIG=/home/alex/.kube/config
-
+export TF_VAR_ssh_key="$(cat ~/.ssh/id_ed25519.pub)"
 
 # ~~~~~~~~~~~~~~~ Completion ~~~~~~~~~~~~~~~~~~~~~~~~
 
