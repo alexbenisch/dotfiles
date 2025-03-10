@@ -1,8 +1,20 @@
 #!/bin/bash
 set -e # Beende das Skript bei Fehlern
-sudo dnf install -y git curl unzip wget ripgrep fd-find \
-  neovim lua5.4 make gcc zsh tmux
-
+sudo dnf install -yi $(cat <<EOF 
+	git 
+	curl 
+	unzip 
+	wget 
+	ripgrep 
+	fd-find 
+  	neovim 
+	lua5.4 
+	make 
+	gcc 
+	zsh 
+	tmux
+EOF
+) 
 mkdir -p "$HOME/.config/zsh"
 git clone https://github.com/sindresorhus/pure.git "$HOME/.config/zsh/pure"
 git clone https://github.com/LazyVim/starter $HOME/.config/nvim
