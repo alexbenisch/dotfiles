@@ -1,20 +1,21 @@
 #!/bin/bash
 set -e # Beende das Skript bei Fehlern
-sudo dnf install -yi $(cat <<EOF 
+sudo dnf install -y $(
+  cat <<EOF
 	git 
 	curl 
 	unzip 
 	wget 
 	ripgrep 
 	fd-find 
-  	neovim 
-	lua5.4 
+  neovim 
+	lua 
 	make 
 	gcc 
 	zsh 
 	tmux
 EOF
-) 
+)
 mkdir -p "$HOME/.config/zsh"
 git clone https://github.com/sindresorhus/pure.git "$HOME/.config/zsh/pure"
 git clone https://github.com/LazyVim/starter $HOME/.config/nvim
@@ -25,6 +26,8 @@ stow -t $HOME zsh tmux nvim # Passe das je nach Struktur an
 echo "📦 Plugins und Abhängigkeiten installieren..."
 # LazyVim Plugins installieren
 nvim --headless "+Lazy sync" +qa
+
+exec zsh
 
 echo "✅ Setup abgeschlossen!"3. **Füge folgenden Inhalt hinzu:**
 
