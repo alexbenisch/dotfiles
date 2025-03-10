@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e # Beende das Skript bei Fehlern
-
+sudo dnf install -y git curl unzip wget ripgrep fd-find \
+  neovim lua5.4 make gcc zsh tmux
 echo "🔧 Symlinking Dotfiles mit Stow..."
 stow -t $HOME zsh tmux nvim # Passe das je nach Struktur an
 
