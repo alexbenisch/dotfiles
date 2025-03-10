@@ -16,6 +16,7 @@ sudo dnf install -y $(
 	tmux
 EOF
 )
+HOME=/home/$USER
 mkdir -p "$HOME/.config/zsh"
 git clone https://github.com/sindresorhus/pure.git "$HOME/.config/zsh/pure"
 git clone https://github.com/LazyVim/starter $HOME/.config/nvim
