@@ -64,7 +64,7 @@ fi
 
 PURE_GIT_PULL=0
 
-fpath+=($HOME/.zsh/pure)
+fpath+=($HOME/.config/zsh/pure)
 # .zshrc
 autoload -U promptinit; promptinit
 prompt pure
@@ -103,12 +103,12 @@ alias devpod="devpod-cli"
 
 
 #export MPLBACKEND=qtagg
-export ANTHROPIC_API_KEY=$(pass show api_keys/anthropic_api_key)
-export OPENAI_API_KEY=$(pass show api_keys/openai_api_key)
+#export ANTHROPIC_API_KEY=$(pass show api_keys/anthropic_api_key)
+#export OPENAI_API_KEY=$(pass show api_keys/openai_api_key)
 export PATH="${PATH}:/home/alex/bin"
 #export PATH=
-export KUBECONFIG=/home/alex/.kube/config
-export TF_VAR_ssh_key="$(cat ~/.ssh/id_ed25519.pub)"
+#export KUBECONFIG=/home/alex/.kube/config
+#export TF_VAR_ssh_key="$(cat ~/.ssh/id_ed25519.pub)"
 
 # ~~~~~~~~~~~~~~~ Completion ~~~~~~~~~~~~~~~~~~~~~~~~
 
