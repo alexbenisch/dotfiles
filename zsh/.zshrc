@@ -109,7 +109,7 @@ export PATH="${PATH}:/home/alex/bin"
 #export PATH=
 #export KUBECONFIG=/home/alex/.kube/config
 #export TF_VAR_ssh_key="$(cat ~/.ssh/id_ed25519.pub)"
-if [[ -f ~/.config/secrets/api_keys.gpg ]]; then
+if [[ -f ~/.config/secrets/openai_api_key.gpg ]]; then
     eval "$(gpg --quiet --decrypt ~/.config/secrets/api_keys.gpg)"
 fi
 
