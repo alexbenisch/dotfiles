@@ -20,6 +20,11 @@ if ! command -v nix-env &>/dev/null; then
 	fi
 fi
 
+# Setze korrekte Locale-Einstellungen
+echo "🌐 Konfiguriere Locale-Einstellungen..."
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 echo "📦 Installiere benötigte Pakete mit Nix..."
 
 # Installiere Pakete mit Nix
@@ -36,7 +41,8 @@ nix-env -iA \
 	nixpkgs.gcc \
 	nixpkgs.zsh \
 	nixpkgs.tmux \
-	nixpkgs.stow
+	nixpkgs.stow \
+	nixpkgs.glibc.bin # Für Locale-Unterstützung
 
 # Erstelle benötigte Verzeichnisse
 mkdir -p "$HOME/.config/zsh"
@@ -72,4 +78,16 @@ nvim --headless "+Lazy sync" +qa
 
 echo "✅ Setup abgeschlossen!"
 echo "🐚 Starte eine neue ZSH-Shell..."
-exec zsh
+
+# Starte ZSH richtig, nur wenn das Skript nicht bereits in ZSH läuft
+if [ -n "$ZSH_VERSION" ]; then
+	# Wir sind bereits in ZSH, Neustart nicht notwendig
+	echo "Bereits in ZSH."
+else
+	# Wir sind nicht in ZSH, also starten wir eine neue ZSH-Instanz
+	if command -v zsh &>/dev/null; then
+		exec zsh
+	else
+		echo "⚠️ ZSH konnte nicht gefunden werden. Bitte starte ZSH manuell."
+	fi
+fi
