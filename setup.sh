@@ -57,7 +57,12 @@ fi
 if [ ! -d "$HOME/.config/nvim" ]; then
 	echo "🚀 Installiere LazyVim..."
 	git clone https://github.com/LazyVim/starter "$HOME/.config/nvim"
+
+	# Starte neovim, um die automatische Installation der Plugins zu triggern
+	echo "📦 Starte Neovim zur Installation der Plugins..."
+	nvim --headless "+Lazy! sync" +qa
 	rm -rf "$HOME/.config/nvim/.git"
+	echo "✅ LazyVim wurde erfolgreich installiert!"
 fi
 
 # Überprüfe, ob Dotfiles-Verzeichnis existiert
