@@ -4,50 +4,39 @@ set -e # Beende das Skript bei Fehlern
 # Definiere Dotfiles-Quellverzeichnis
 DOTFILES_SOURCE="$HOME/.local/share/dotfiles"
 
-# Paketmanager und Systeminformationen ermitteln
-if [ -f /etc/debian_version ]; then
-	echo "🐧 Debian-basiertes System erkannt"
-	PACKAGE_MANAGER="apt"
-	INSTALL_CMD="sudo apt update && sudo apt install -y"
-elif [ -f /etc/fedora-release ]; then
-	echo "🎩 Fedora-basiertes System erkannt"
-	PACKAGE_MANAGER="dnf"
-	INSTALL_CMD="sudo dnf install -y"
-elif command -v nix-env &>/dev/null; then
-	echo "❄️ Nix Package Manager erkannt"
-	PACKAGE_MANAGER="nix"
-	INSTALL_CMD="nix-env -iA nixpkgs."
-else
-	echo "⚠️ Unterstützter Paketmanager nicht gefunden."
-	echo "Möchten Sie Nix Package Manager installieren? (y/n)"
-	read -r install_nix
-	if [[ $install_nix =~ ^[Yy]$ ]]; then
-		echo "🔄 Installiere Nix Package Manager..."
-		curl -L https://nixos.org/nix/install | sh
-		source ~/.nix-profile/etc/profile.d/nix.sh
-		PACKAGE_MANAGER="nix"
-		INSTALL_CMD="nix-env -iA nixpkgs."
+echo "❄️ Überprüfe Nix Package Manager..."
+
+# Prüfe, ob Nix bereits installiert ist, andernfalls installiere ihn
+if ! command -v nix-env &>/dev/null; then
+	echo "🔄 Installiere Nix Package Manager..."
+	curl -L https://nixos.org/nix/install | sh
+
+	# Lade Nix-Umgebung in die aktuelle Shell
+	if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
+		source "$HOME/.nix-profile/etc/profile.d/nix.sh"
 	else
-		echo "❌ Kein unterstützter Paketmanager gefunden. Installation abgebrochen."
+		echo "⚠️ Konnte Nix-Umgebung nicht laden. Starte eine neue Shell und versuche es erneut."
 		exit 1
 	fi
 fi
 
-echo "📦 Installiere benötigte Pakete mit $PACKAGE_MANAGER..."
+echo "📦 Installiere benötigte Pakete mit Nix..."
 
-# Paketliste
-packages="git curl unzip wget ripgrep lua make gcc zsh tmux neovim"
-
-if [ "$PACKAGE_MANAGER" = "apt" ]; then
-	$INSTALL_CMD $packages fd-find
-elif [ "$PACKAGE_MANAGER" = "dnf" ]; then
-	$INSTALL_CMD $packages fd-find
-elif [ "$PACKAGE_MANAGER" = "nix" ]; then
-	# Bei Nix müssen wir die Pakete einzeln installieren
-	for pkg in $packages fd; do
-		$INSTALL_CMD$pkg
-	done
-fi
+# Installiere Pakete mit Nix
+nix-env -iA \
+	nixpkgs.git \
+	nixpkgs.curl \
+	nixpkgs.unzip \
+	nixpkgs.wget \
+	nixpkgs.ripgrep \
+	nixpkgs.fd \
+	nixpkgs.neovim \
+	nixpkgs.lua \
+	nixpkgs.gnumake \
+	nixpkgs.gcc \
+	nixpkgs.zsh \
+	nixpkgs.tmux \
+	nixpkgs.stow
 
 # Erstelle benötigte Verzeichnisse
 mkdir -p "$HOME/.config/zsh"
@@ -65,18 +54,6 @@ if [ ! -d "$HOME/.config/nvim" ]; then
 	rm -rf "$HOME/.config/nvim/.git"
 fi
 
-# Prüfe, ob stow installiert ist
-if ! command -v stow &>/dev/null; then
-	echo "📥 Stow nicht gefunden, installiere..."
-	if [ "$PACKAGE_MANAGER" = "apt" ]; then
-		sudo apt install -y stow
-	elif [ "$PACKAGE_MANAGER" = "dnf" ]; then
-		sudo dnf install -y stow
-	elif [ "$PACKAGE_MANAGER" = "nix" ]; then
-		nix-env -iA nixpkgs.stow
-	fi
-fi
-
 # Überprüfe, ob Dotfiles-Verzeichnis existiert
 if [ ! -d "$DOTFILES_SOURCE" ]; then
 	echo "❌ Dotfiles-Verzeichnis $DOTFILES_SOURCE nicht gefunden"
@@ -84,7 +61,7 @@ if [ ! -d "$DOTFILES_SOURCE" ]; then
 	exit 1
 fi
 
-# Wechsle ins Dotfiles-Verzeichnis
+# Wechsle ins Dotfiles-Verzeichnis und verlinke Dateien
 echo "🔧 Symlinking Dotfiles mit Stow..."
 cd "$DOTFILES_SOURCE"
 stow -t "$HOME" zsh tmux nvim
