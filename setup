@@ -15,7 +15,7 @@ if [ ! -d "$HOME/.zsh/pure" ]; then
 fi
 
 if ! command -v chezmoi >/dev/null; then
-  sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply git@github.com:mischavandenburg/dotfiles-demo.git
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply git@github.com:alexbenisch/dotfiles.git
 fi
 
 exit 0
