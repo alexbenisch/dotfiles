@@ -45,35 +45,15 @@ export BROWSER="google-chrome-stable"
 
 # Directories
 
-export REPOS="$HOME/Repos"
+export REPOS="$HOME/repos"
 export GITUSER="alexbenisch"
 export GHREPOS="$REPOS/github.com/$GITUSER"
 export DOTFILES="$GHREPOS/dotfiles"
-#export LAB="$GHREPOS/lab"
 export SCRIPTS="$DOTFILES/scripts"
 export NEXTCLOUD="$HOME/Nextcloud/"
-#export ZETTELKASTEN="$HOME/Zettelkasten"
-#export STOW_TARGET=~/.config/
-
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
 alias conflicts="systemctl --type=service"
 alias devpod="devpod-cli"
-
-
-
-#export MPLBACKEND=qtagg
-#export ANTHROPIC_API_KEY=$(pass show api_keys/anthropic_api_key)
-#export OPENAI_API_KEY=$(pass show api_keys/openai_api_key)
 export PATH="${PATH}:/home/alex/bin"
-#export PATH=
-#export KUBECONFIG=/home/alex/.kube/config
-#export TF_VAR_ssh_key="$(cat ~/.ssh/id_ed25519.pub)"
-if [[ -f ~/.config/secrets/openai_api_key.gpg ]]; then
-    eval "$(gpg --quiet --decrypt ~/.config/secrets/api_keys.gpg)"
-fi
-
-
 # (optional, aber sinnvoll beim Debuggen oder Testen)
 [[ -f ~/.zshenv ]] && source ~/.zshenv
 
