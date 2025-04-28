@@ -1,22 +1,4 @@
-# ~~~~~~~~~~~~~~~ SSH ~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-# Using GPG + YubiKey for ssh.
-# Don't execute when in dev container
-
-
-if [[ -z "$REMOTE_CONTAINERS" && -z "$CODESPACES" && -z "$DEVCONTAINER_TYPE" ]]; then
-  export GPG_TTY="$(tty)"
-  unset SSH_AGENT_PID
-
-  if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
-  export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-  fi
-
-  gpgconf --launch gpg-agent
-  gpg-connect-agent updatestartuptty /bye > /dev/null 2>&1
-
-fi
 
 # ~~~~~~~~~~~~~~~ Environment Variables ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -51,7 +33,7 @@ export GHREPOS="$REPOS/github.com/$GITUSER"
 export DOTFILES="$GHREPOS/dotfiles"
 export SCRIPTS="$DOTFILES/scripts"
 export NEXTCLOUD="$HOME/Nextcloud/"
-alias conflicts="systemctl --type=service"
+#alias conflicts="systemctl --type=service"
 alias devpod="devpod-cli"
 export PATH="${PATH}:/home/alex/bin"
 # (optional, aber sinnvoll beim Debuggen oder Testen)
