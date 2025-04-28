@@ -48,6 +48,13 @@ bindkey '^U' backward-kill-line # Ctrl + U löscht die gesamte Zeile
 bindkey '^R' fzf-history-widget
 
 
+# ~~~~~~~~~~~~~~~ Mise ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+if command -v mise > /dev/null ; then
+  eval "$($HOME/.local/bin/mise activate zsh)"
+fi
+
 # ~~~~~~~~~~~~~~~ Path configuration ~~~~~~~~~~~~~~~~~~~~~~~~
 
 setopt extended_glob null_glob
