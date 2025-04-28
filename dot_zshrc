@@ -1,85 +1,165 @@
+# ~~~~~~~~~~~~~~~ SSH ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# Using GPG + YubiKey for ssh.
+# Don't execute when in dev container
+
+
+if [[ -z "$REMOTE_CONTAINERS" && -z "$CODESPACES" && -z "$DEVCONTAINER_TYPE" ]]; then
+  export GPG_TTY="$(tty)"
+  unset SSH_AGENT_PID
+
+  if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
+  export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+  fi
+
+  gpgconf --launch gpg-agent
+  gpg-connect-agent updatestartuptty /bye > /dev/null 2>&1
+
+fi
+
+# ~~~~~~~~~~~~~~~ Environment Variables ~~~~~~~~~~~~~~~~~~~~~~~~
+
+# User configuration
+
+# export MANPATH="/usr/local/man:$MANPATH"
+
+# You may need to manually set your language environment
+export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+   export EDITOR='vim'
+ else
+   export EDITOR='nvim'
+ fi
+# Set to superior editing mode
+
+set -o vi
+
+export VISUAL=nvim
+export EDITOR=nvim
+export TERM="tmux-256color"
+
+export BROWSER="google-chrome-stable"
+
+# Directories
+
+export REPOS="$HOME/Repos"
+export GITUSER="alexbenisch"
+export GHREPOS="$REPOS/github.com/$GITUSER"
+export DOTFILES="$GHREPOS/dotfiles"
+#export LAB="$GHREPOS/lab"
+export SCRIPTS="$DOTFILES/scripts"
+export NEXTCLOUD="$HOME/Nextcloud/"
+#export ZETTELKASTEN="$HOME/Zettelkasten"
+#export STOW_TARGET=~/.config/
+
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+alias conflicts="systemctl --type=service"
+alias devpod="devpod-cli"
+
+
+
+#export MPLBACKEND=qtagg
+#export ANTHROPIC_API_KEY=$(pass show api_keys/anthropic_api_key)
+#export OPENAI_API_KEY=$(pass show api_keys/openai_api_key)
+export PATH="${PATH}:/home/alex/bin"
+#export PATH=
+#export KUBECONFIG=/home/alex/.kube/config
+#export TF_VAR_ssh_key="$(cat ~/.ssh/id_ed25519.pub)"
+if [[ -f ~/.config/secrets/openai_api_key.gpg ]]; then
+    eval "$(gpg --quiet --decrypt ~/.config/secrets/api_keys.gpg)"
+fi
+
+
+# (optional, aber sinnvoll beim Debuggen oder Testen)
+[[ -f ~/.zshenv ]] && source ~/.zshenv
+
+# ~~~~~~~~~~~~~~~ Keybindings ~~~~~~~~~~~~~~~~~~~~~~~~
+
+bindkey '^A' beginning-of-line  # Ctrl + A springt zum Zeilenanfang
+bindkey '^E' end-of-line        # Ctrl + E springt zum Zeilenende
+bindkey '^K' kill-line          # Ctrl + K löscht von Cursor bis Zeilenende
+bindkey '^U' backward-kill-line # Ctrl + U löscht die gesamte Zeile
+bindkey '^R' fzf-history-widget
+
+
+# ~~~~~~~~~~~~~~~ Path configuration ~~~~~~~~~~~~~~~~~~~~~~~~
+
+setopt extended_glob null_glob
+# Mit setzt du eine flexiblere Dateisuche und vermeidest unerwartete Zeichenketten,
+# wenn keine Dateien gefunden werden. Ideal für Skripte und effizientes Arbeiten in der Shell.
+
+path=(
+    $path                           # Keep existing PATH entries
+    $HOME/bin
+    $HOME/.local/bin
+    $SCRIPTS
+)
+
+# Remove duplicate entries and non-existent directories
+typeset -U path
+path=($^path(N-/))
+
+export PATH
+
 # ~~~~~~~~~~~~~~~ History ~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-HISTFILE="$HOME/.zsh_history"
+HISTFILE=~/.zsh_history
 HISTSIZE=100000
 SAVEHIST=100000
 
+setopt HIST_IGNORE_SPACE  # Don't save when prefixed with space
+setopt HIST_IGNORE_DUPS   # Don't save duplicate lines
+setopt SHARE_HISTORY      # Share history between sessions
 
-# ~~~~~~~~~~~~~~~ Prompt ~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-PURE_GIT_PULL=0
-
-if [[ "$OSTYPE" == darwin* ]]; then
-  fpath+=("$(brew --prefix)/share/zsh/site-functions")
-else
-  fpath+=($HOME/.zsh/pure)
+# FZF für History-Suche aktivieren
+if command -v fzf >/dev/null 2>&1; then
+  bindkey '^R' fzf-history-widget
 fi
 
+# ~~~~~~~~~~~~~~~ Prompt ~~~~~~~~~~~~~~~~~~~~~~~~
+PURE_GIT_PULL=0
+
+fpath+=($HOME/.config/zsh/pure)
+# .zshrc
 autoload -U promptinit; promptinit
-
 prompt pure
-
-# enable zsh vi-mode
-bindkey -v
-export KEYTIMEOUT=1 # make switching between modes faster
-
 
 # ~~~~~~~~~~~~~~~ Environment Variables ~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-if command -v nvim > /dev/null ; then
-  export EDITOR="nvim"
-  export VISUAL="nvim"
-fi
-
-export LANG="en_US.UTF-8"
-
-
-# ~~~~~~~~~~~~~~~ Mise ~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-if command -v mise > /dev/null ; then
-  eval "$($HOME/.local/bin/mise activate zsh)"
-fi
-
 
 # ~~~~~~~~~~~~~~~ Completion ~~~~~~~~~~~~~~~~~~~~~~~~
 
+fpath+=~/.zfunc
 
-autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
 
-if command -v fzf > /dev/null ; then
-  source <(fzf --zsh)
-fi
+autoload -Uz compinit
+compinit -u
 
-if command -v flux > /dev/null ; then
-  source <(flux completion zsh)
-fi
+# ~~~~~~~~~~~~~~~ Sourcing ~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-if command -v mise > /dev/null ; then
-  source <(mise completion zsh)
-fi
+source <(fzf --zsh)
+
+#eval "$(direnv hook zsh)"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# ~~~~~~~~~~~~~~~ Misc ~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-# ~~~~~~~~~~~~~~~ Aliases ~~~~~~~~~~~~~~~~~~~~~~~~
+
+fpath+=~/.zfunc; autoload -Uz compinit; compinit
 
 
-alias v=nvim
-alias gp="git pull"
-alias lg=lazygit
 
-if command -v bat > /dev/null ; then
-  alias cat="bat"
-fi
 
-if command -v lsd > /dev/null ; then
-  alias ls="lsd"
-  alias ll="ls -lgh"
-  alias la='ls -lathr'
-  alias lla='ls -lgha'
-  alias lt='ls --tree'
-fi
+
+
+
+
 
