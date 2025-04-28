@@ -50,7 +50,6 @@ bindkey '^R' fzf-history-widget
 
 # ~~~~~~~~~~~~~~~ Mise ~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 if command -v mise > /dev/null ; then
   eval "$($HOME/.local/bin/mise activate zsh)"
 fi
@@ -96,6 +95,49 @@ fpath+=($HOME/.zsh/pure)
 # .zshrc
 autoload -U promptinit; promptinit
 prompt pure
+# ~~~~~~~~~~~~~~~ Aliases ~~~~~~~~~~~~~~~~~~~~~~~~
+if command -v bat > /dev/null ; then
+  alias cat="bat"
+fi
+if command -v lsd > /dev/null ; then
+  alias ls="lsd"
+  alias ll="ls -lgh"
+  alias la='ls -lathr'
+  alias lla='ls -lgha'
+  alias lt='ls --tree'
+fi
+
+# Git
+
+alias gp='git pull'
+alias gs='git status'
+alias lg='lazygit'
+
+# Kubernetes
+
+alias k='kubectl'
+
+alias kgp='kubectl get pods'
+alias kc='kubectx'
+alias kn='kubens'
+
+alias fgk='flux get kustomizations'
+
+# Pass
+
+alias pc='pass show -c'
+
+# Devpod
+
+alias ds='devpod ssh'
+
+# Bluetooth
+
+# Airpods Max
+alias btm='bluetoothctl connect 08:FF:44:0E:EA:D6'
+
+# Airpods
+alias bta='bluetoothctl connect 08:65:18:78:BD:A6'
 
 # ~~~~~~~~~~~~~~~ Environment Variables ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -103,26 +145,52 @@ prompt pure
 
 # ~~~~~~~~~~~~~~~ Completion ~~~~~~~~~~~~~~~~~~~~~~~~
 
-fpath+=~/.zfunc
 
-zstyle ':completion:*' menu select
+fpath+=~/.zfunc
 
 autoload -Uz compinit
 compinit -u
 
+zstyle ':completion:*' menu select
+
+if command -v fzf > /dev/null ; then
+  source <(fzf --zsh)
+fi
+
+if command -v k3d > /dev/null ; then
+  source <(k3d completion zsh)
+fi
+
+if command -v kubectl > /dev/null ; then
+  source <(kubectl completion zsh)
+fi
+
+if command -v flux > /dev/null ; then
+  source <(flux completion zsh)
+fi
+
+if command -v mise > /dev/null ; then
+  source <(mise completion zsh)
+fi
+
+
 # ~~~~~~~~~~~~~~~ Sourcing ~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-#source <(fzf --zsh)
+#if command -v direnv > /dev/null ; then
+#  eval "$(direnv hook zsh)"
+#fi
+
+source <(fzf --zsh)
 
 #eval "$(direnv hook zsh)"
 
-#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 # ~~~~~~~~~~~~~~~ Misc ~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
-fpath+=~/.zfunc; autoload -Uz compinit; compinit
+#fpath+=~/.zfunc; autoload -Uz compinit; compinit
 
 
 
