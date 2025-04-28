@@ -85,7 +85,7 @@ fi
 # ~~~~~~~~~~~~~~~ Prompt ~~~~~~~~~~~~~~~~~~~~~~~~
 PURE_GIT_PULL=0
 
-fpath+=($HOME/.config/zsh/pure)
+fpath+=($HOME/.zsh/pure)
 # .zshrc
 autoload -U promptinit; promptinit
 prompt pure
