@@ -148,6 +148,23 @@ alias btm='bluetoothctl connect 08:FF:44:0E:EA:D6'
 # Airpods
 alias bta='bluetoothctl connect 08:65:18:78:BD:A6'
 
+# Befehl Logdatei mit besserer Strukturierung wie in der vorherigen Funktion:
+alias lf='function _command_log() { 
+    local cmd="$*"
+    local timestamp=$(date "+%Y-%m-%d_%H:%M:%S")
+    local logfile="logfile.log"
+    
+    {
+        echo ""
+        echo "# [$timestamp] Command: $cmd"
+        echo "# ----------------------------------------"
+        eval "$cmd"
+        echo "# [$timestamp] Command completed"
+        echo "# ========================================"
+    } >> "$logfile"
+    
+    echo "Command logged: $cmd"
+}; _command_log'
 # ~~~~~~~~~~~~~~~ Environment Variables ~~~~~~~~~~~~~~~~~~~~~~~~
 
 
