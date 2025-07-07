@@ -3,12 +3,19 @@
 set -euo pipefail
 
 XDG_CONFIG_HOME="$HOME/.config"
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3baea1e (Updated dot_zshrc)
 if command -v zsh >/dev/null; then
   sudo chsh -s "$(command -v zsh)" "$USER"
 fi
 
 if ! command -v chezmoi >/dev/null; then
+<<<<<<< HEAD
+=======
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply git@github.com:alexbenisch/dotfiles.git
+>>>>>>> 3baea1e (Updated dot_zshrc)
   sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply https://github.com/alexbenisch/dotfiles
 fi
 
