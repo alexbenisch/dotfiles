@@ -142,11 +142,6 @@ alias ds='devpod ssh'
 
 # Bluetooth
 
-# Airpods Max
-alias btm='bluetoothctl connect 08:FF:44:0E:EA:D6'
-
-# Airpods
-alias bta='bluetoothctl connect 08:65:18:78:BD:A6'
 
 # Befehl Logdatei mit besserer Strukturierung wie in der vorherigen Funktion:
 alias lf='function _command_log() { 
