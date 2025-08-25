@@ -48,6 +48,32 @@ export PATH="${PATH}:/home/alex/bin"
 # (optional, aber sinnvoll beim Debuggen oder Testen)
 [[ -f ~/.zshenv ]] && source ~/.zshenv
 
+# ~~~~~~~~~~~~~~~ Antigen Plugin Manager ~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Load antigen
+source ~/.antigen/antigen.zsh
+
+# Bundles
+antigen bundle git
+antigen bundle command-not-found
+antigen bundle docker
+antigen bundle kubectl
+
+# Syntax highlighting bundle
+antigen bundle zsh-users/zsh-syntax-highlighting
+
+# Fish-like auto suggestions
+antigen bundle zsh-users/zsh-autosuggestions
+
+# Extra zsh completions
+antigen bundle zsh-users/zsh-completions
+
+# FZF integration
+antigen bundle unixorn/fzf-zsh-plugin@main
+
+# Tell antigen that you're done
+antigen apply
+
 # ~~~~~~~~~~~~~~~ Keybindings ~~~~~~~~~~~~~~~~~~~~~~~~
 
 bindkey '^A' beginning-of-line  # Ctrl + A springt zum Zeilenanfang
