@@ -3,19 +3,29 @@
 set -euo pipefail
 
 XDG_CONFIG_HOME="$HOME/.config"
-<<<<<<< HEAD
 
-=======
->>>>>>> 3baea1e (Updated dot_zshrc)
+if ! command -v zsh >/dev/null; then
+  if command -v apt >/dev/null; then
+    sudo apt update && sudo apt install -y zsh
+  elif command -v yum >/dev/null; then
+    sudo yum install -y zsh
+  elif command -v dnf >/dev/null; then
+    sudo dnf install -y zsh
+  elif command -v pacman >/dev/null; then
+    sudo pacman -S --noconfirm zsh
+  elif command -v brew >/dev/null; then
+    brew install zsh
+  else
+    echo "Package manager not found. Please install zsh manually."
+    exit 1
+  fi
+fi
+
 if command -v zsh >/dev/null; then
   sudo chsh -s "$(command -v zsh)" "$USER"
 fi
 
 if ! command -v chezmoi >/dev/null; then
-<<<<<<< HEAD
-=======
-  sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply git@github.com:alexbenisch/dotfiles.git
->>>>>>> 3baea1e (Updated dot_zshrc)
   sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply https://github.com/alexbenisch/dotfiles
 fi
 
