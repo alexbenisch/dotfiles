@@ -4,7 +4,11 @@ set -euo pipefail
 
 XDG_CONFIG_HOME="$HOME/.config"
 
+echo "🚀 Setting up dotfiles..."
+
+# Install zsh if not present
 if ! command -v zsh >/dev/null; then
+  echo "📦 Installing zsh..."
   if command -v apt >/dev/null; then
     sudo apt update && sudo apt install -y zsh
   elif command -v yum >/dev/null; then
@@ -16,35 +20,52 @@ if ! command -v zsh >/dev/null; then
   elif command -v brew >/dev/null; then
     brew install zsh
   else
-    echo "Package manager not found. Please install zsh manually."
+    echo "⚠️  Package manager not found. Please install zsh manually."
     exit 1
   fi
+  echo "✅ Zsh installed"
 fi
 
+# Set zsh as default shell if available
 if command -v zsh >/dev/null; then
-  sudo chsh -s "$(command -v zsh)" "$USER"
+  if [ "$SHELL" != "$(command -v zsh)" ]; then
+    echo "📝 Setting zsh as default shell..."
+    sudo chsh -s "$(command -v zsh)" "$USER"
+    echo "✅ Zsh set as default shell (restart terminal to take effect)"
+  fi
 fi
 
 # Install and configure locales for Debian-based systems
 if ! locale -a | grep -q "en_US.utf8\|en_US.UTF-8" && command -v apt >/dev/null; then
+  echo "🌍 Configuring locales..."
   sudo apt update && sudo apt install -y locales
   sudo locale-gen en_US.UTF-8
   sudo update-locale LANG=en_US.UTF-8
+  echo "✅ Locales configured"
 fi
 
+# Install chezmoi if not present
 if ! command -v chezmoi >/dev/null; then
-  sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply https://github.com/alexbenisch/dotfiles
+  echo "📦 Installing chezmoi..."
+  sh -c "$(curl -fsLS get.chezmoi.io)"
+  echo "✅ Chezmoi installed"
 fi
 
+# Setup Zsh Pure prompt
 if [ ! -d "$HOME/.zsh" ]; then
+  echo "📁 Creating ~/.zsh directory..."
   mkdir -p "$HOME/.zsh"
 fi
 
 if [ ! -d "$HOME/.zsh/pure" ]; then
+  echo "🎨 Installing Pure prompt theme..."
   git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"
+  echo "✅ Pure prompt installed"
 fi
 
+# Install fzf if not available (fallback to system packages)
 if ! command -v fzf >/dev/null; then
+  echo "🔍 Installing fzf..."
   if command -v apt >/dev/null; then
     sudo apt update && sudo apt install -y fzf
   elif command -v yum >/dev/null; then
@@ -56,18 +77,23 @@ if ! command -v fzf >/dev/null; then
   elif command -v brew >/dev/null; then
     brew install fzf
   else
-    echo "Package manager not found. Please install fzf manually."
-    exit 1
+    echo "⚠️  Package manager not found for fzf. Will try via mise."
   fi
 fi
 
+# Setup Alacritty themes if Alacritty is installed
 if command -v alacritty >/dev/null; then
-  mkdir -p "$XDG_CONFIG_HOME"/alacritty/themes
-  git clone https://github.com/alacritty/alacritty-theme "$XDG_CONFIG_HOME"/alacritty/themes
+  if [ ! -d "$XDG_CONFIG_HOME/alacritty/themes" ]; then
+    echo "🎨 Installing Alacritty themes..."
+    mkdir -p "$XDG_CONFIG_HOME"/alacritty/themes
+    git clone https://github.com/alacritty/alacritty-theme "$XDG_CONFIG_HOME"/alacritty/themes
+    echo "✅ Alacritty themes installed"
+  fi
 fi
 
 # Install tmux if not present
 if ! command -v tmux >/dev/null; then
+  echo "🖥️  Installing tmux..."
   if command -v apt >/dev/null; then
     sudo apt update && sudo apt install -y tmux
   elif command -v yum >/dev/null; then
@@ -79,8 +105,7 @@ if ! command -v tmux >/dev/null; then
   elif command -v brew >/dev/null; then
     brew install tmux
   else
-    echo "Package manager not found. Please install tmux manually."
-    exit 1
+    echo "⚠️  Package manager not found for tmux. Please install manually."
   fi
 fi
 
@@ -90,15 +115,97 @@ if command -v tmux >/dev/null; then
   
   # Check if tpm is installed
   if [ ! -d "$XDG_CONFIG_HOME/tmux/plugins/tpm" ]; then
-    echo "Installing tmux plugin manager (tpm)..."
+    echo "🔌 Installing tmux plugin manager (tpm)..."
     git clone https://github.com/tmux-plugins/tpm "$XDG_CONFIG_HOME"/tmux/plugins/tpm
     
     # Install plugins if tmux config exists
     if [ -f "$XDG_CONFIG_HOME/tmux/tmux.conf" ]; then
-      echo "Installing tmux plugins..."
+      echo "📦 Installing tmux plugins..."
       "$XDG_CONFIG_HOME"/tmux/plugins/tpm/bin/install_plugins
     fi
+    echo "✅ Tmux plugin manager installed"
   fi
 fi
+
+# Setup mise if not installed
+if ! command -v mise >/dev/null; then
+  echo "🔧 Installing mise..."
+  curl https://mise.run | sh
+  echo "✅ Mise installed"
+  
+  # Add mise to PATH for this session
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# Install tools via mise if available
+if command -v mise >/dev/null; then
+  echo "📦 Installing development tools via mise..."
+  
+  # Install all tools from config if config exists
+  if [ -f "$HOME/.config/mise/config.toml" ] || [ -f "$XDG_CONFIG_HOME/mise/config.toml" ]; then
+    mise install
+    echo "✅ All mise tools installed from config"
+  else
+    # Fallback: install essential tools including uv
+    echo "📋 Installing essential tools..."
+    mise use -g uv@latest
+    mise use -g bat@latest
+    mise use -g fzf@latest
+    mise use -g lsd@latest
+    mise use -g ripgrep@latest
+    mise use -g kubectl@latest
+    mise use -g flux@latest
+    mise use -g k9s@latest
+    echo "✅ Essential tools installed via mise"
+  fi
+  
+  # Check for critical tools and install if missing
+  echo "🔍 Checking for critical development tools..."
+  
+  if ! command -v uv >/dev/null; then
+    echo "🐍 Installing uv (Python package manager)..."
+    mise use -g uv@latest
+  fi
+  
+  if ! command -v kubectl >/dev/null; then
+    echo "☸️  Installing kubectl (Kubernetes CLI)..."
+    mise use -g kubectl@latest
+  fi
+  
+  if ! command -v flux >/dev/null; then
+    echo "🔄 Installing flux (GitOps toolkit)..."
+    mise use -g flux@latest
+  fi
+  
+  if ! command -v k9s >/dev/null; then
+    echo "🐕 Installing k9s (Kubernetes TUI)..."
+    mise use -g k9s@latest
+  fi
+  
+  echo "✅ All critical tools checked/installed"
+fi
+
+# Create necessary directories
+echo "📁 Creating configuration directories..."
+mkdir -p "$HOME/.config"
+mkdir -p "$HOME/.local/bin"
+mkdir -p "$HOME/bin"
+mkdir -p "$HOME/repos"
+
+echo ""
+echo "🎉 Dotfiles setup complete!"
+echo ""
+echo "Next steps:"
+echo "1. Restart your terminal or run: exec zsh"
+echo "2. Verify installations:"
+echo "   - mise list: show all installed tools"
+echo "   - uv --version: Python package manager"
+echo "   - kubectl version --client: Kubernetes CLI"
+echo "   - flux version: GitOps toolkit"
+echo "   - k9s version: Kubernetes TUI"
+echo "   - tmux -V: terminal multiplexer"
+echo "3. Additional tools to install manually if needed:"
+echo "   - docker: for containerization"
+echo ""
 
 exit 0
