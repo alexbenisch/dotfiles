@@ -52,6 +52,9 @@ if ! command -v chezmoi >/dev/null; then
 fi
 
 # Install Antigen plugin manager for zsh
+# Antigen is required by .zshrc to manage zsh plugins
+# Without this, you'll get: "source: no such file or directory: ~/.antigen/antigen.zsh"
+# Antigen will auto-install configured plugins (including oh-my-zsh bundles) on first zsh launch
 if [ ! -d "$HOME/.antigen" ]; then
   echo "🔌 Installing Antigen plugin manager..."
   mkdir -p "$HOME/.antigen"

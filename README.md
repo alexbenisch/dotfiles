@@ -5,11 +5,12 @@ Personal dotfiles managed with [chezmoi](https://chezmoi.io) for consistent deve
 ## Features
 
 ### Shell Configuration
-- **Zsh** with Pure prompt theme
+- **Zsh** with Pure prompt theme and Antigen plugin manager
 - **Bash** with custom Git-aware prompt
 - Vi mode editing in both shells
 - Extensive aliases for Git, Kubernetes, and daily tasks
 - History optimization with fzf integration
+- Zsh plugins: syntax highlighting, autosuggestions, completions
 
 ### Development Tools
 - **Neovim** configuration with modern plugins
@@ -158,6 +159,7 @@ chezmoi apply
 - **zsh**: Shell (will be set as default)
 - **git**: Version control
 - **curl**: Downloads and installations
+- **antigen**: Zsh plugin manager (auto-installed by setup script)
 
 ### Optional (Enhanced Experience)
 - **fzf**: Fuzzy finding and history search
@@ -176,13 +178,38 @@ chezmoi apply
 - tmux-plugins/tmux-resurrect
 - tmux-plugins/tmux-continuum
 
+### Zsh Plugins (Auto-installed via Antigen)
+- git, command-not-found, docker, kubectl (from oh-my-zsh)
+- zsh-users/zsh-syntax-highlighting
+- zsh-users/zsh-autosuggestions
+- zsh-users/zsh-completions
+- unixorn/fzf-zsh-plugin
+
 ## Notes
 
 - Setup script will change default shell to zsh
+- **Antigen** plugin manager is installed to `~/.antigen/` by setup script
 - Pure prompt theme is cloned to `~/.zsh/pure`
+- Zsh plugins are auto-installed by Antigen on first shell launch
+- **Important**: `antigen bundle` without a repository path defaults to oh-my-zsh plugins
 - Tmux plugins are auto-installed on first run
 - GPG agent is configured for SSH key management
 - mise is used for language/tool version management
+
+## Troubleshooting
+
+### Zsh Configuration Issues
+
+**Error: `~/.antigen/antigen.zsh` not found**
+- Antigen was missing from the setup process
+- Fixed in latest version: setup script now installs Antigen automatically
+- Manual fix: `mkdir -p ~/.antigen && curl -L git.io/antigen > ~/.antigen/antigen.zsh`
+- Then run: `source ~/.zshrc` to install all plugins
+
+**Understanding Antigen Plugin Sources**
+- `antigen bundle <plugin>` → pulls from oh-my-zsh (e.g., `git`, `docker`)
+- `antigen bundle <user>/<repo>` → pulls from GitHub (e.g., `zsh-users/zsh-syntax-highlighting`)
+- oh-my-zsh framework is installed automatically as a dependency for oh-my-zsh plugins
 
 ## License
 
