@@ -195,7 +195,7 @@ chezmoi apply
 - **Automatic backup**: Existing `.zshrc`, `.zprofile`, `.bashrc` are backed up as `YYYY-MM-DD_filename_backup`
 - Shell configs are automatically applied via chezmoi during setup
 - Tmux plugins are auto-installed on first run
-- GPG agent is configured for SSH key management
+- **GPG agent configuration is disabled by default** (can be enabled by uncommenting in `.zshrc`)
 - mise is used for language/tool version management
 
 ## Troubleshooting
