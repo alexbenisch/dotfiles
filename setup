@@ -220,15 +220,54 @@ mkdir -p "$HOME/bin"
 mkdir -p "$HOME/repos"
 mkdir -p "$HOME/.zfunc"  # For zsh completions (docker, kubectl, etc.)
 
+# Handle existing shell configuration files
+echo ""
+echo "📝 Applying shell configuration files..."
+
+TIMESTAMP=$(date "+%Y-%m-%d")
+DOTFILES_SOURCE="$(pwd)"
+
+# Initialize chezmoi if not already done
+if ! chezmoi source-path >/dev/null 2>&1; then
+  echo "🔧 Initializing chezmoi..."
+  chezmoi init --source="$DOTFILES_SOURCE"
+fi
+
+# Function to backup and apply config file
+backup_and_apply() {
+  local file="$1"
+  local home_path="$HOME/$file"
+
+  if [ -f "$home_path" ]; then
+    backup_name="${TIMESTAMP}_${file}_backup"
+    mv "$home_path" "$HOME/$backup_name"
+    echo "💾 Backed up existing $file to ~/$backup_name"
+  fi
+
+  # Apply from chezmoi
+  if chezmoi apply "$home_path" 2>/dev/null; then
+    echo "✅ Applied $file from dotfiles"
+  else
+    echo "⚠️  Note: $file will be applied when you run 'chezmoi apply'"
+  fi
+}
+
+# Apply shell configuration files
+backup_and_apply ".zshrc"
+backup_and_apply ".zprofile"
+backup_and_apply ".bashrc"
+
 echo ""
 echo "🎉 Dotfiles setup complete!"
 echo ""
-echo "⚠️  IMPORTANT: Dotfiles have NOT been applied yet!"
+echo "✅ Shell configuration files (.zshrc, .zprofile, .bashrc) have been applied"
 echo ""
-echo "To apply dotfiles safely:"
+echo "⚠️  Note: Other dotfiles (config directories) have NOT been applied yet!"
+echo ""
+echo "To apply remaining dotfiles:"
 echo "1. Review what will be changed: chezmoi diff"
 echo "2. Backup your current config: cp -r ~/.config ~/.config.backup"
-echo "3. Apply dotfiles: chezmoi apply"
+echo "3. Apply all remaining dotfiles: chezmoi apply"
 echo ""
 echo "Or apply selectively:"
 echo "  chezmoi apply ~/.config/mise"
