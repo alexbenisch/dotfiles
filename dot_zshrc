@@ -35,16 +35,18 @@ export SCRIPTS="$DOTFILES/scripts"
 export NEXTCLOUD="$HOME/Nextcloud/"
 export GNUPGHOME="~/.gnupg/"
 
-# Configure GPG agent for SSH (DISABLED for devcontainer compatibility)
-# Uncomment below if you need GPG agent for SSH on your system
-# if command -v gpgconf > /dev/null && command -v gpg-connect-agent > /dev/null; then
-#   unset SSH_AGENT_PID
-#   if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
-#     export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-#   fi
-#   export GPG_TTY=$(tty)
-#   gpg-connect-agent updatestartuptty /bye >/dev/null
-# fi
+# Configure GPG agent for SSH (only if gpg is available AND has keys)
+if command -v gpgconf > /dev/null && command -v gpg-connect-agent > /dev/null; then
+  # Check if GPG has any keys before trying to use it
+  if gpg --list-secret-keys >/dev/null 2>&1; then
+    unset SSH_AGENT_PID
+    if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
+      export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+    fi
+    export GPG_TTY=$(tty)
+    gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
+  fi
+fi
 #alias conflicts="systemctl --type=service"
 alias devpod="devpod-cli"
 export PATH="${PATH}:/home/alex/bin"
