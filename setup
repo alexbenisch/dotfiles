@@ -51,6 +51,14 @@ if ! command -v chezmoi >/dev/null; then
   echo "✅ Chezmoi installed"
 fi
 
+# Install Antigen plugin manager for zsh
+if [ ! -d "$HOME/.antigen" ]; then
+  echo "🔌 Installing Antigen plugin manager..."
+  mkdir -p "$HOME/.antigen"
+  curl -L git.io/antigen > "$HOME/.antigen/antigen.zsh"
+  echo "✅ Antigen installed"
+fi
+
 # Setup Zsh Pure prompt
 if [ ! -d "$HOME/.zsh" ]; then
   echo "📁 Creating ~/.zsh directory..."
