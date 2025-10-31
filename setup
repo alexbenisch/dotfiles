@@ -112,12 +112,12 @@ fi
 # Validate tmux configuration and install tpm if needed
 if command -v tmux >/dev/null; then
   mkdir -p "$XDG_CONFIG_HOME"/tmux/plugins
-  
+
   # Check if tpm is installed
   if [ ! -d "$XDG_CONFIG_HOME/tmux/plugins/tpm" ]; then
     echo "🔌 Installing tmux plugin manager (tpm)..."
     git clone https://github.com/tmux-plugins/tpm "$XDG_CONFIG_HOME"/tmux/plugins/tpm
-    
+
     # Install plugins if tmux config exists
     if [ -f "$XDG_CONFIG_HOME/tmux/tmux.conf" ]; then
       echo "📦 Installing tmux plugins..."
@@ -132,7 +132,7 @@ if ! command -v mise >/dev/null; then
   echo "🔧 Installing mise..."
   curl https://mise.run | sh
   echo "✅ Mise installed"
-  
+
   # Add mise to PATH for this session
   export PATH="$HOME/.local/bin:$PATH"
 fi
@@ -140,7 +140,7 @@ fi
 # Install tools via mise if available
 if command -v mise >/dev/null; then
   echo "📦 Installing development tools via mise..."
-  
+
   # Install all tools from config if config exists
   if [ -f "$HOME/.config/mise/config.toml" ] || [ -f "$XDG_CONFIG_HOME/mise/config.toml" ]; then
     mise install
@@ -158,42 +158,70 @@ if command -v mise >/dev/null; then
     mise use -g k9s@latest
     echo "✅ Essential tools installed via mise"
   fi
-  
+
   # Check for critical tools and install if missing
   echo "🔍 Checking for critical development tools..."
-  
+
   if ! command -v uv >/dev/null; then
     echo "🐍 Installing uv (Python package manager)..."
     mise use -g uv@latest
   fi
-  
+
   if ! command -v kubectl >/dev/null; then
     echo "☸️  Installing kubectl (Kubernetes CLI)..."
     mise use -g kubectl@latest
   fi
-  
+
   if ! command -v flux >/dev/null; then
     echo "🔄 Installing flux (GitOps toolkit)..."
     mise use -g flux@latest
   fi
-  
+
   if ! command -v k9s >/dev/null; then
     echo "🐕 Installing k9s (Kubernetes TUI)..."
     mise use -g k9s@latest
   fi
-  
+
   echo "✅ All critical tools checked/installed"
 fi
 
 # Create necessary directories
 echo "📁 Creating configuration directories..."
-mkdir -p "$HOME/.config"
+
+# Check if ~/.config exists before creating
+if [ ! -d "$HOME/.config" ]; then
+  echo ""
+  echo "⚠️  The ~/.config directory does not exist."
+  read -p "Do you want to create it? (y/N): " -n 1 -r
+  echo ""
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    mkdir -p "$HOME/.config"
+    echo "✅ Created ~/.config directory"
+  else
+    echo "⚠️  Skipped creating ~/.config - some configurations may not work properly"
+  fi
+else
+  echo "✅ ~/.config directory already exists (not modified)"
+fi
+
 mkdir -p "$HOME/.local/bin"
 mkdir -p "$HOME/bin"
 mkdir -p "$HOME/repos"
 
 echo ""
 echo "🎉 Dotfiles setup complete!"
+echo ""
+echo "⚠️  IMPORTANT: Dotfiles have NOT been applied yet!"
+echo ""
+echo "To apply dotfiles safely:"
+echo "1. Review what will be changed: chezmoi diff"
+echo "2. Backup your current config: cp -r ~/.config ~/.config.backup"
+echo "3. Apply dotfiles: chezmoi apply"
+echo ""
+echo "Or apply selectively:"
+echo "  chezmoi apply ~/.config/mise"
+echo "  chezmoi apply ~/.config/tmux"
+echo "  chezmoi apply ~/.config/nvim"
 echo ""
 echo "Next steps:"
 echo "1. Restart your terminal or run: exec zsh"
@@ -209,3 +237,4 @@ echo "   - docker: for containerization"
 echo ""
 
 exit 0
+
