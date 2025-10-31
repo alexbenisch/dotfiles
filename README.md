@@ -211,6 +211,12 @@ chezmoi apply
 - `antigen bundle <user>/<repo>` → pulls from GitHub (e.g., `zsh-users/zsh-syntax-highlighting`)
 - oh-my-zsh framework is installed automatically as a dependency for oh-my-zsh plugins
 
+**Error: `tee: /completions/_docker: No such file or directory`**
+- The `~/.zfunc` directory for zsh completions is missing
+- Fixed in latest version: setup script now creates `~/.zfunc` automatically
+- Manual fix: `mkdir -p ~/.zfunc`
+- Regenerate completions: `docker completion zsh > ~/.zfunc/_docker` (if docker is installed)
+
 ## License
 
 MIT License - Feel free to use and modify as needed.

@@ -218,6 +218,7 @@ fi
 mkdir -p "$HOME/.local/bin"
 mkdir -p "$HOME/bin"
 mkdir -p "$HOME/repos"
+mkdir -p "$HOME/.zfunc"  # For zsh completions (docker, kubectl, etc.)
 
 echo ""
 echo "🎉 Dotfiles setup complete!"
