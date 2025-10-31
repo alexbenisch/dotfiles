@@ -192,6 +192,8 @@ chezmoi apply
 - Pure prompt theme is cloned to `~/.zsh/pure`
 - Zsh plugins are auto-installed by Antigen on first shell launch
 - **Important**: `antigen bundle` without a repository path defaults to oh-my-zsh plugins
+- **Automatic backup**: Existing `.zshrc`, `.zprofile`, `.bashrc` are backed up as `YYYY-MM-DD_filename_backup`
+- Shell configs are automatically applied via chezmoi during setup
 - Tmux plugins are auto-installed on first run
 - GPG agent is configured for SSH key management
 - mise is used for language/tool version management
