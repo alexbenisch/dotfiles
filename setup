@@ -49,6 +49,9 @@ if ! command -v chezmoi >/dev/null; then
   echo "📦 Installing chezmoi..."
   sh -c "$(curl -fsLS get.chezmoi.io)"
   echo "✅ Chezmoi installed"
+
+  # Add chezmoi to PATH for this session (installer puts it in ~/bin)
+  export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 fi
 
 # Install Antigen plugin manager for zsh
@@ -227,10 +230,22 @@ echo "📝 Applying shell configuration files..."
 TIMESTAMP=$(date "+%Y-%m-%d")
 DOTFILES_SOURCE="$(pwd)"
 
-# Initialize chezmoi if not already done
-if ! chezmoi source-path >/dev/null 2>&1; then
-  echo "🔧 Initializing chezmoi..."
-  chezmoi init --source="$DOTFILES_SOURCE"
+# Ensure chezmoi is in PATH (in case it was just installed)
+export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+
+# Verify chezmoi is available
+if ! command -v chezmoi >/dev/null 2>&1; then
+  echo "⚠️  Chezmoi not found in PATH after installation."
+  echo "    Skipping shell config application. Please run manually:"
+  echo "    export PATH=\"\$HOME/bin:\$PATH\""
+  echo "    chezmoi init --source=\"$DOTFILES_SOURCE\""
+  echo "    chezmoi apply"
+else
+  # Initialize chezmoi if not already done
+  if ! chezmoi source-path >/dev/null 2>&1; then
+    echo "🔧 Initializing chezmoi with source: $DOTFILES_SOURCE"
+    chezmoi init --source="$DOTFILES_SOURCE"
+  fi
 fi
 
 # Function to backup and apply config file
@@ -252,10 +267,14 @@ backup_and_apply() {
   fi
 }
 
-# Apply shell configuration files
-backup_and_apply ".zshrc"
-backup_and_apply ".zprofile"
-backup_and_apply ".bashrc"
+# Apply shell configuration files (only if chezmoi is available)
+if command -v chezmoi >/dev/null 2>&1; then
+  backup_and_apply ".zshrc"
+  backup_and_apply ".zprofile"
+  backup_and_apply ".bashrc"
+else
+  echo "⚠️  Skipping shell config application (chezmoi not available)"
+fi
 
 echo ""
 echo "🎉 Dotfiles setup complete!"
