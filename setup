@@ -154,7 +154,7 @@ if command -v mise >/dev/null; then
     mise use -g lsd@latest
     mise use -g ripgrep@latest
     mise use -g kubectl@latest
-    mise use -g flux@latest
+    mise use -g flux2@latest
     mise use -g k9s@latest
     echo "✅ Essential tools installed via mise"
   fi
@@ -174,7 +174,7 @@ if command -v mise >/dev/null; then
 
   if ! command -v flux >/dev/null; then
     echo "🔄 Installing flux (GitOps toolkit)..."
-    mise use -g flux@latest
+    mise use -g flux2@latest
   fi
 
   if ! command -v k9s >/dev/null; then
@@ -237,4 +237,3 @@ echo "   - docker: for containerization"
 echo ""
 
 exit 0
-
