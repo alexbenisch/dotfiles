@@ -4,7 +4,62 @@ set -euo pipefail
 
 XDG_CONFIG_HOME="$HOME/.config"
 
+# Function to install and make tools available system-wide
+install_system_tool() {
+  local tool_name="$1"
+  local install_command="$2"
+
+  if ! command -v "$tool_name" >/dev/null 2>&1; then
+    echo "📦 Installing $tool_name system-wide..."
+
+    # Create temp directory for installation
+    local temp_dir=$(mktemp -d)
+    cd "$temp_dir"
+
+    # Run the install command
+    eval "$install_command"
+
+    # Find the installed binary
+    local binary_path=""
+    if [ -f "$HOME/bin/$tool_name" ]; then
+      binary_path="$HOME/bin/$tool_name"
+    elif [ -f "$HOME/.local/bin/$tool_name" ]; then
+      binary_path="$HOME/.local/bin/$tool_name"
+    elif [ -f "./bin/$tool_name" ]; then
+      binary_path="./bin/$tool_name"
+    fi
+
+    if [ -n "$binary_path" ] && [ -f "$binary_path" ]; then
+      # Install to system-wide location
+      sudo cp "$binary_path" /usr/local/bin/
+      sudo chmod +x /usr/local/bin/"$tool_name"
+      echo "✅ $tool_name installed to /usr/local/bin (available for all users)"
+    else
+      echo "⚠️  $tool_name binary not found in expected locations, checking if already in PATH..."
+      if command -v "$tool_name" >/dev/null 2>&1; then
+        echo "✅ $tool_name is available in PATH"
+      else
+        echo "❌ Failed to install $tool_name"
+        cd - >/dev/null
+        rm -rf "$temp_dir"
+        return 1
+      fi
+    fi
+
+    cd - >/dev/null
+    rm -rf "$temp_dir"
+  else
+    echo "✅ $tool_name already installed"
+  fi
+}
+
 echo "🚀 Setting up dotfiles..."
+
+# Ensure chezmoi is available system-wide
+install_system_tool "chezmoi" 'sh -c "$(curl -fsLS get.chezmoi.io)"'
+
+# Ensure mise is available system-wide
+install_system_tool "mise" 'curl https://mise.run | sh'
 
 # Install zsh if not present
 if ! command -v zsh >/dev/null; then
@@ -44,15 +99,7 @@ if ! locale -a | grep -q "en_US.utf8\|en_US.UTF-8" && command -v apt >/dev/null;
   echo "✅ Locales configured"
 fi
 
-# Install chezmoi if not present
-if ! command -v chezmoi >/dev/null; then
-  echo "📦 Installing chezmoi..."
-  sh -c "$(curl -fsLS get.chezmoi.io)"
-  echo "✅ Chezmoi installed"
-
-  # Add chezmoi to PATH for this session (installer puts it in ~/bin)
-  export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
-fi
+# chezmoi is now installed system-wide by install_system_tool function above
 
 # Install Antigen plugin manager for zsh
 # Antigen is required by .zshrc to manage zsh plugins
@@ -141,15 +188,7 @@ if command -v tmux >/dev/null; then
   fi
 fi
 
-# Setup mise if not installed
-if ! command -v mise >/dev/null; then
-  echo "🔧 Installing mise..."
-  curl https://mise.run | sh
-  echo "✅ Mise installed"
-
-  # Add mise to PATH for this session
-  export PATH="$HOME/.local/bin:$PATH"
-fi
+# mise is now installed system-wide by install_system_tool function above
 
 # Install tools via mise if available
 if command -v mise >/dev/null; then
@@ -230,22 +269,10 @@ echo "📝 Applying shell configuration files..."
 TIMESTAMP=$(date "+%Y-%m-%d")
 DOTFILES_SOURCE="$(pwd)"
 
-# Ensure chezmoi is in PATH (in case it was just installed)
-export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
-
-# Verify chezmoi is available
-if ! command -v chezmoi >/dev/null 2>&1; then
-  echo "⚠️  Chezmoi not found in PATH after installation."
-  echo "    Skipping shell config application. Please run manually:"
-  echo "    export PATH=\"\$HOME/bin:\$PATH\""
-  echo "    chezmoi init --source=\"$DOTFILES_SOURCE\""
-  echo "    chezmoi apply"
-else
-  # Initialize chezmoi if not already done
-  if ! chezmoi source-path >/dev/null 2>&1; then
-    echo "🔧 Initializing chezmoi with source: $DOTFILES_SOURCE"
-    chezmoi init --source="$DOTFILES_SOURCE"
-  fi
+# Initialize chezmoi if not already done
+if ! chezmoi source-path >/dev/null 2>&1; then
+  echo "🔧 Initializing chezmoi with source: $DOTFILES_SOURCE"
+  chezmoi init --source="$DOTFILES_SOURCE"
 fi
 
 # Function to backup and apply config file
@@ -267,14 +294,10 @@ backup_and_apply() {
   fi
 }
 
-# Apply shell configuration files (only if chezmoi is available)
-if command -v chezmoi >/dev/null 2>&1; then
-  backup_and_apply ".zshrc"
-  backup_and_apply ".zprofile"
-  backup_and_apply ".bashrc"
-else
-  echo "⚠️  Skipping shell config application (chezmoi not available)"
-fi
+# Apply shell configuration files
+backup_and_apply ".zshrc"
+backup_and_apply ".zprofile"
+backup_and_apply ".bashrc"
 
 echo ""
 echo "🎉 Dotfiles setup complete!"
