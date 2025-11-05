@@ -72,11 +72,16 @@ backup_and_apply() {
     echo "💾 Backed up existing $file to ~/$backup_name"
   fi
 
-  # Simulate chezmoi apply by copying from dotfiles
+  # Simulate chezmoi apply failure and fallback to direct copy
+  echo "🔄 Applying $file..."
+  # Simulate chezmoi apply failing (would fail in test environment)
+  # Fallback: copy directly from source
   local source_file="$TEST_DOTFILES/dot_${file#.}"
   if [ -f "$source_file" ]; then
     cp "$source_file" "$home_path"
-    echo "✅ Applied $file from dotfiles"
+    echo "✅ Copied $file directly from dotfiles source"
+  else
+    echo "❌ Failed to apply $file - source file not found: $source_file"
   fi
 }
 
@@ -90,11 +95,15 @@ backup_and_apply_dir() {
     echo "💾 Backed up existing $dir to ~/$backup_name"
   fi
 
-  # Simulate chezmoi apply by copying from dotfiles
+  # Simulate chezmoi apply failure and fallback to direct copy
+  echo "🔄 Applying $dir..."
+  # Fallback: copy directly from source
   local source_dir="$TEST_DOTFILES/dot_${dir#.}"
   if [ -d "$source_dir" ]; then
     cp -r "$source_dir" "$home_path"
-    echo "✅ Applied $dir from dotfiles"
+    echo "✅ Copied $dir directly from dotfiles source"
+  else
+    echo "❌ Failed to apply $dir - source directory not found: $source_dir"
   fi
 }
 

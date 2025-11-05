@@ -292,10 +292,20 @@ backup_and_apply() {
   fi
 
   # Apply from chezmoi
-  if chezmoi apply "$home_path" 2>/dev/null; then
+  echo "🔄 Applying $file..."
+  if chezmoi apply "$home_path"; then
     echo "✅ Applied $file from dotfiles"
   else
-    echo "⚠️  Note: $file will be applied when you run 'chezmoi apply'"
+    echo "⚠️  chezmoi apply failed for $file, trying direct copy..."
+    # Fallback: copy directly from source
+    local source_file="$DOTFILES_SOURCE/dot_${file#.}"
+    if [ -f "$source_file" ]; then
+      cp "$source_file" "$home_path"
+      echo "✅ Copied $file directly from dotfiles source"
+    else
+      echo "❌ Failed to apply $file - source file not found: $source_file"
+      echo "   You may need to run 'chezmoi apply' manually after setup"
+    fi
   fi
 }
 
@@ -311,10 +321,20 @@ backup_and_apply_dir() {
   fi
 
   # Apply from chezmoi
-  if chezmoi apply "$home_path" 2>/dev/null; then
+  echo "🔄 Applying $dir..."
+  if chezmoi apply "$home_path"; then
     echo "✅ Applied $dir from dotfiles"
   else
-    echo "⚠️  Note: $dir will be applied when you run 'chezmoi apply'"
+    echo "⚠️  chezmoi apply failed for $dir, trying direct copy..."
+    # Fallback: copy directly from source
+    local source_dir="$DOTFILES_SOURCE/dot_${dir#.}"
+    if [ -d "$source_dir" ]; then
+      cp -r "$source_dir" "$home_path"
+      echo "✅ Copied $dir directly from dotfiles source"
+    else
+      echo "❌ Failed to apply $dir - source directory not found: $source_dir"
+      echo "   You may need to run 'chezmoi apply' manually after setup"
+    fi
   fi
 }
 
@@ -325,6 +345,33 @@ backup_and_apply ".bashrc"
 
 # Apply shell configuration directories
 backup_and_apply_dir ".zfunc"
+
+echo ""
+echo "🔍 Verifying shell configuration files..."
+
+# Verify that critical files exist
+VERIFICATION_FAILED=0
+for file in ".zshrc" ".zprofile" ".bashrc"; do
+  if [ ! -f "$HOME/$file" ]; then
+    echo "❌ Warning: $file is missing!"
+    VERIFICATION_FAILED=1
+  else
+    echo "✅ $file is present"
+  fi
+done
+
+if [ -d "$HOME/.zfunc" ]; then
+  echo "✅ .zfunc directory is present"
+else
+  echo "⚠️  .zfunc directory is missing (may not be managed by chezmoi yet)"
+fi
+
+echo ""
+if [ $VERIFICATION_FAILED -eq 1 ]; then
+  echo "⚠️  Some configuration files are missing!"
+  echo "   Try running: chezmoi apply"
+  echo "   Or manually copy from: $DOTFILES_SOURCE"
+fi
 
 echo ""
 echo "🎉 Dotfiles setup complete!"
