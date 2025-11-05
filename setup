@@ -62,6 +62,24 @@ install_system_tool "chezmoi" 'sh -c "$(curl -fsLS get.chezmoi.io)"'
 # Ensure mise is available system-wide
 install_system_tool "mise" 'curl https://mise.run | sh'
 
+# Install system dependencies for development tools
+echo "📦 Installing system dependencies..."
+if command -v apt >/dev/null; then
+  # libatomic is required for Node.js on some systems
+  # build-essential provides gcc and other build tools needed by mise
+  sudo apt update && sudo apt install -y libatomic1 build-essential
+  echo "✅ System dependencies installed (libatomic1, build-essential)"
+elif command -v yum >/dev/null; then
+  sudo yum install -y libatomic gcc gcc-c++ make
+  echo "✅ System dependencies installed"
+elif command -v dnf >/dev/null; then
+  sudo dnf install -y libatomic gcc gcc-c++ make
+  echo "✅ System dependencies installed"
+elif command -v pacman >/dev/null; then
+  sudo pacman -S --noconfirm base-devel
+  echo "✅ System dependencies installed"
+fi
+
 # Install zsh if not present
 if ! command -v zsh >/dev/null; then
   echo "📦 Installing zsh..."
@@ -238,37 +256,37 @@ if command -v mise >/dev/null; then
 
   if ! command -v nvim >/dev/null; then
     echo "📝 Installing neovim (text editor)..."
-    mise use -g neovim@latest
+    mise use -g neovim@latest || echo "⚠️  Failed to install neovim, continuing..."
   fi
 
   if ! command -v node >/dev/null; then
     echo "📦 Installing node (JavaScript runtime)..."
-    mise use -g node@latest
+    mise use -g node@latest || echo "⚠️  Failed to install node, continuing..."
   fi
 
   if ! command -v uv >/dev/null; then
     echo "🐍 Installing uv (Python package manager)..."
-    mise use -g uv@latest
+    mise use -g uv@latest || echo "⚠️  Failed to install uv, continuing..."
   fi
 
   if ! command -v kubectl >/dev/null; then
     echo "☸️  Installing kubectl (Kubernetes CLI)..."
-    mise use -g kubectl@latest
+    mise use -g kubectl@latest || echo "⚠️  Failed to install kubectl, continuing..."
   fi
 
   if ! command -v flux >/dev/null; then
     echo "🔄 Installing flux (GitOps toolkit)..."
-    mise use -g flux2@latest
+    mise use -g flux2@latest || echo "⚠️  Failed to install flux, continuing..."
   fi
 
   if ! command -v k9s >/dev/null; then
     echo "🐕 Installing k9s (Kubernetes TUI)..."
-    mise use -g k9s@latest
+    mise use -g k9s@latest || echo "⚠️  Failed to install k9s, continuing..."
   fi
 
   if ! command -v cz >/dev/null; then
     echo "📝 Installing commitizen (commit message tool)..."
-    mise use -g pipx:commitizen@latest
+    mise use -g pipx:commitizen@latest || echo "⚠️  Failed to install commitizen, continuing..."
   fi
 
   echo "✅ All critical tools checked/installed"
