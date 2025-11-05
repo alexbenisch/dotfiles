@@ -292,6 +292,20 @@ if command -v mise >/dev/null; then
   echo "✅ All critical tools checked/installed"
 fi
 
+# Apply Neovim/LazyVim configuration if neovim is installed
+if command -v nvim >/dev/null; then
+  echo ""
+  echo "📝 Applying Neovim (LazyVim) configuration..."
+
+  if chezmoi apply "$HOME/.config/nvim" 2>/dev/null; then
+    echo "✅ Applied LazyVim configuration from dotfiles"
+    echo "   LazyVim will install plugins on first nvim launch"
+  else
+    echo "⚠️  Could not apply nvim config automatically"
+    echo "   Run manually: chezmoi apply ~/.config/nvim"
+  fi
+fi
+
 # Create necessary directories
 echo "📁 Creating configuration directories..."
 
@@ -425,8 +439,11 @@ echo ""
 echo "🎉 Dotfiles setup complete!"
 echo ""
 echo "✅ Shell configuration files (.zshrc, .zprofile, .bashrc) have been applied"
+if command -v nvim >/dev/null; then
+  echo "✅ Neovim with LazyVim configuration has been applied"
+fi
 echo ""
-echo "⚠️  Note: Other dotfiles (config directories) have NOT been applied yet!"
+echo "⚠️  Note: Other dotfiles (config directories like tmux) have NOT been applied yet!"
 echo ""
 echo "To apply remaining dotfiles:"
 echo "1. Review what will be changed: chezmoi diff"
@@ -436,11 +453,12 @@ echo ""
 echo "Or apply selectively:"
 echo "  chezmoi apply ~/.config/mise"
 echo "  chezmoi apply ~/.config/tmux"
-echo "  chezmoi apply ~/.config/nvim"
 echo ""
 echo "Next steps:"
 echo "1. Restart your terminal or run: exec zsh"
-echo "2. Verify installations:"
+echo "2. Launch neovim to complete LazyVim setup: nvim"
+echo "   (LazyVim will automatically install plugins on first launch)"
+echo "3. Verify installations:"
 echo "   - mise list: show all installed tools"
 echo "   - nvim --version: neovim text editor"
 echo "   - node --version: Node.js runtime"
@@ -450,7 +468,7 @@ echo "   - flux version: GitOps toolkit"
 echo "   - k9s version: Kubernetes TUI"
 echo "   - cz version: commitizen (commit message tool)"
 echo "   - tmux -V: terminal multiplexer"
-echo "3. Additional tools to install manually if needed:"
+echo "4. Additional tools to install manually if needed:"
 echo "   - docker: for containerization"
 echo ""
 echo "If any tool is missing, run: mise install"

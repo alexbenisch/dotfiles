@@ -35,7 +35,8 @@ The `./setup` script fully automates your development environment setup. Here's 
 Automatically installs ALL tools from `~/.config/mise/config.toml`:
 
 #### Editors & Runtimes
-- ✅ **neovim** - Modern text editor
+- ✅ **neovim** - Modern text editor (binary via mise)
+- ✅ **LazyVim** - Neovim configuration with plugins (applied automatically)
 - ✅ **node** - JavaScript runtime
 - ✅ **python** - Programming language
 
@@ -110,9 +111,8 @@ git pull
 
 The setup script intentionally does NOT apply these (to avoid overwriting):
 
-- ❌ `~/.config/nvim/` - Neovim configuration (apply with `chezmoi apply ~/.config/nvim`)
 - ❌ `~/.config/tmux/` - tmux configuration (apply with `chezmoi apply ~/.config/tmux`)
-- ❌ Other `~/.config/*` directories
+- ❌ Other `~/.config/*` directories (except mise and nvim which ARE applied)
 
 To apply these:
 ```bash
@@ -120,12 +120,27 @@ To apply these:
 chezmoi diff
 
 # Apply selectively
-chezmoi apply ~/.config/nvim
 chezmoi apply ~/.config/tmux
 
 # Or apply everything
 chezmoi apply
 ```
+
+## LazyVim Setup
+
+The setup script:
+1. ✅ Installs neovim binary via mise
+2. ✅ Downloads LazyVim starter via chezmoi externals
+3. ✅ Applies your custom LazyVim configuration
+4. ✅ Merges with LazyVim starter (excluding your custom options.lua)
+
+On first `nvim` launch, LazyVim will automatically:
+- Install lazy.nvim plugin manager
+- Install all configured plugins
+- Set up LSP servers
+- Download treesitter parsers
+
+Just run `nvim` and LazyVim handles the rest!
 
 ## Troubleshooting
 
