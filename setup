@@ -300,25 +300,40 @@ if command -v nvim >/dev/null; then
   # Check if nvim config already exists
   if [ -d "$HOME/.config/nvim" ] && [ "$(ls -A $HOME/.config/nvim 2>/dev/null)" ]; then
     echo "ℹ️  Neovim config already exists at ~/.config/nvim"
-    echo "   Skipping LazyVim installation to preserve existing config"
-    echo ""
-    echo "   To reinstall LazyVim, manually backup and remove existing config:"
-    echo "   mv ~/.config/nvim ~/.config/nvim.bak"
-    echo "   Then re-run: ./setup"
-  else
-    echo "📥 Installing LazyVim starter..."
-    # Clone LazyVim starter following official instructions
-    if git clone https://github.com/LazyVim/starter ~/.config/nvim 2>/dev/null; then
-      # Remove .git folder so you can manage it yourself or track in dotfiles
-      rm -rf ~/.config/nvim/.git
-      echo "✅ LazyVim starter installed with default configuration"
-      echo "   This is a pure LazyVim setup with no custom modifications"
-      echo "   LazyVim will install plugins on first nvim launch"
+    echo "   Applying updated config from dotfiles..."
+
+    # Apply nvim config from chezmoi/dotfiles
+    if chezmoi apply "$HOME/.config/nvim" 2>/dev/null; then
+      echo "✅ Applied LazyVim configuration from dotfiles"
     else
-      echo "⚠️  Failed to clone LazyVim starter"
-      echo "   You can install manually with:"
-      echo "   git clone https://github.com/LazyVim/starter ~/.config/nvim"
+      echo "⚠️  Could not apply nvim config via chezmoi, trying direct copy..."
+      if [ -d "$DOTFILES_SOURCE/dot_config/nvim" ]; then
+        cp -r "$DOTFILES_SOURCE/dot_config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null
+        echo "✅ Copied LazyVim configuration from dotfiles"
+      else
+        echo "⚠️  No nvim config found in dotfiles, skipping"
+      fi
     fi
+  else
+    echo "📥 Installing LazyVim from dotfiles..."
+
+    # Apply nvim config from chezmoi/dotfiles
+    if chezmoi apply "$HOME/.config/nvim" 2>/dev/null; then
+      echo "✅ Applied LazyVim configuration from dotfiles"
+    else
+      echo "⚠️  Could not apply via chezmoi, trying direct copy..."
+      if [ -d "$DOTFILES_SOURCE/dot_config/nvim" ]; then
+        mkdir -p "$HOME/.config/nvim"
+        cp -r "$DOTFILES_SOURCE/dot_config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null
+        echo "✅ Copied LazyVim configuration from dotfiles"
+      else
+        echo "❌ No nvim config found in dotfiles"
+        echo "   You can install LazyVim manually with:"
+        echo "   git clone https://github.com/LazyVim/starter ~/.config/nvim"
+      fi
+    fi
+
+    echo "   LazyVim will install plugins on first nvim launch"
   fi
 fi
 
