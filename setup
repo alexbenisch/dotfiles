@@ -309,18 +309,10 @@ if command -v nvim >/dev/null; then
     echo "📥 Installing LazyVim starter..."
     # Clone LazyVim starter following official instructions
     if git clone https://github.com/LazyVim/starter ~/.config/nvim 2>/dev/null; then
-      # Remove .git folder so it can be managed by chezmoi
+      # Remove .git folder so you can manage it yourself or track in dotfiles
       rm -rf ~/.config/nvim/.git
-      echo "✅ LazyVim starter installed"
-
-      # Now apply custom config overlays from chezmoi
-      echo "📝 Applying your custom LazyVim configuration..."
-      if [ -d "$DOTFILES_SOURCE/dot_config/nvim" ]; then
-        # Copy custom config files, preserving LazyVim starter files
-        cp -r "$DOTFILES_SOURCE/dot_config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null || true
-        echo "✅ Custom LazyVim configuration applied"
-      fi
-
+      echo "✅ LazyVim starter installed with default configuration"
+      echo "   This is a pure LazyVim setup with no custom modifications"
       echo "   LazyVim will install plugins on first nvim launch"
     else
       echo "⚠️  Failed to clone LazyVim starter"
