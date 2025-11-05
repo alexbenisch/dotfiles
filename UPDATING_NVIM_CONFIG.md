@@ -12,18 +12,35 @@ Your LazyVim configuration is now tracked in the dotfiles repository.
 
 When you make changes to your local neovim config and want to save them to dotfiles:
 
-```bash
-# Navigate to dotfiles
-cd ~/.local/share/dotfiles
+### Method 1: Using Chezmoi (Recommended)
 
-# Copy updated config
-cp -r ~/.config/nvim/* dot_config/nvim/
+```bash
+# Re-add the nvim config to chezmoi (updates tracked files)
+chezmoi re-add ~/.config/nvim
+
+# Or add specific changed files
+chezmoi add ~/.config/nvim/lua/plugins/myplugin.lua
 
 # Check what changed
+chezmoi cd
 git status
 git diff
 
 # Commit changes
+git add .
+git commit -m "Update nvim config: <describe your changes>"
+git push
+exit  # exit chezmoi source directory
+```
+
+### Method 2: Manual (for reference)
+
+```bash
+cd ~/.local/share/dotfiles
+
+# Copy changed files (including hidden files)
+cp -r ~/.config/nvim/. dot_config/nvim/
+
 git add dot_config/nvim/
 git commit -m "Update nvim config: <describe your changes>"
 git push
@@ -33,16 +50,28 @@ git push
 
 If you've pulled dotfiles updates and want to apply them locally:
 
+### Using Chezmoi (Recommended)
+
 ```bash
 # Pull latest dotfiles
 cd ~/.local/share/dotfiles
 git pull
 
-# Apply to local nvim
-cp -r dot_config/nvim/* ~/.config/nvim/
-
-# Or use chezmoi
+# Apply nvim config from dotfiles to local
 chezmoi apply ~/.config/nvim
+
+# Or just run setup script which does this
+./setup
+```
+
+### Manual Method
+
+```bash
+cd ~/.local/share/dotfiles
+git pull
+
+# Copy including hidden files
+cp -r dot_config/nvim/. ~/.config/nvim/
 ```
 
 ## What Gets Tracked
