@@ -3,6 +3,7 @@
 set -euo pipefail
 
 XDG_CONFIG_HOME="$HOME/.config"
+DOTFILES_SOURCE="$HOME/.local/share/dotfiles"
 
 # Function to install and make tools available system-wide
 install_system_tool() {
@@ -302,7 +303,6 @@ echo ""
 echo "📝 Applying shell configuration files..."
 
 TIMESTAMP=$(date "+%Y-%m-%d")
-DOTFILES_SOURCE="$(pwd)"
 
 # Initialize chezmoi if not already done
 if ! chezmoi source-path >/dev/null 2>&1; then
