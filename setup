@@ -59,6 +59,16 @@ echo "🚀 Setting up dotfiles..."
 # Ensure chezmoi is available system-wide
 install_system_tool "chezmoi" 'sh -c "$(curl -fsLS get.chezmoi.io)"'
 
+# Configure chezmoi to use this dotfiles directory as source
+echo "⚙️  Configuring chezmoi..."
+mkdir -p "$HOME/.config/chezmoi"
+cat > "$HOME/.config/chezmoi/chezmoi.toml" <<EOF
+# Chezmoi configuration
+# Use ~/.local/share/dotfiles as the source directory
+sourceDir = "$DOTFILES_SOURCE"
+EOF
+echo "✅ Chezmoi configured to use $DOTFILES_SOURCE"
+
 # Ensure mise is available system-wide
 install_system_tool "mise" 'curl https://mise.run | sh'
 
