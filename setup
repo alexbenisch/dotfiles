@@ -292,17 +292,41 @@ if command -v mise >/dev/null; then
   echo "✅ All critical tools checked/installed"
 fi
 
-# Apply Neovim/LazyVim configuration if neovim is installed
+# Install LazyVim if neovim is installed
 if command -v nvim >/dev/null; then
   echo ""
-  echo "📝 Applying Neovim (LazyVim) configuration..."
+  echo "📝 Setting up LazyVim configuration..."
 
-  if chezmoi apply "$HOME/.config/nvim" 2>/dev/null; then
-    echo "✅ Applied LazyVim configuration from dotfiles"
-    echo "   LazyVim will install plugins on first nvim launch"
+  # Check if nvim config already exists
+  if [ -d "$HOME/.config/nvim" ] && [ "$(ls -A $HOME/.config/nvim 2>/dev/null)" ]; then
+    echo "ℹ️  Neovim config already exists at ~/.config/nvim"
+    echo "   Skipping LazyVim installation to preserve existing config"
+    echo ""
+    echo "   To reinstall LazyVim, manually backup and remove existing config:"
+    echo "   mv ~/.config/nvim ~/.config/nvim.bak"
+    echo "   Then re-run: ./setup"
   else
-    echo "⚠️  Could not apply nvim config automatically"
-    echo "   Run manually: chezmoi apply ~/.config/nvim"
+    echo "📥 Installing LazyVim starter..."
+    # Clone LazyVim starter following official instructions
+    if git clone https://github.com/LazyVim/starter ~/.config/nvim 2>/dev/null; then
+      # Remove .git folder so it can be managed by chezmoi
+      rm -rf ~/.config/nvim/.git
+      echo "✅ LazyVim starter installed"
+
+      # Now apply custom config overlays from chezmoi
+      echo "📝 Applying your custom LazyVim configuration..."
+      if [ -d "$DOTFILES_SOURCE/dot_config/nvim" ]; then
+        # Copy custom config files, preserving LazyVim starter files
+        cp -r "$DOTFILES_SOURCE/dot_config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null || true
+        echo "✅ Custom LazyVim configuration applied"
+      fi
+
+      echo "   LazyVim will install plugins on first nvim launch"
+    else
+      echo "⚠️  Failed to clone LazyVim starter"
+      echo "   You can install manually with:"
+      echo "   git clone https://github.com/LazyVim/starter ~/.config/nvim"
+    fi
   fi
 fi
 

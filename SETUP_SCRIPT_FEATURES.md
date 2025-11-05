@@ -128,11 +128,12 @@ chezmoi apply
 
 ## LazyVim Setup
 
-The setup script:
+The setup script follows the official LazyVim installation:
 1. ✅ Installs neovim binary via mise
-2. ✅ Downloads LazyVim starter via chezmoi externals
-3. ✅ Applies your custom LazyVim configuration
-4. ✅ Merges with LazyVim starter (excluding your custom options.lua)
+2. ✅ Clones LazyVim starter from GitHub: `git clone https://github.com/LazyVim/starter ~/.config/nvim`
+3. ✅ Removes `.git` folder (so it can be managed by your dotfiles)
+4. ✅ Overlays your custom configuration from dotfiles
+5. ✅ Preserves existing nvim config if already present
 
 On first `nvim` launch, LazyVim will automatically:
 - Install lazy.nvim plugin manager
@@ -141,6 +142,21 @@ On first `nvim` launch, LazyVim will automatically:
 - Download treesitter parsers
 
 Just run `nvim` and LazyVim handles the rest!
+
+### Reinstalling LazyVim
+
+If you need to reinstall LazyVim:
+```bash
+# Backup existing config
+mv ~/.config/nvim ~/.config/nvim.bak
+mv ~/.local/share/nvim ~/.local/share/nvim.bak  # optional
+mv ~/.local/state/nvim ~/.local/state/nvim.bak  # optional
+mv ~/.cache/nvim ~/.cache/nvim.bak              # optional
+
+# Re-run setup
+cd ~/dotfiles
+./setup
+```
 
 ## Troubleshooting
 
