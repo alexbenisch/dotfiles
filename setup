@@ -318,7 +318,8 @@ if command -v nvim >/dev/null; then
     else
       echo "⚠️  Could not apply nvim config via chezmoi, trying direct copy..."
       if [ -d "$DOTFILES_SOURCE/dot_config/nvim" ]; then
-        cp -r "$DOTFILES_SOURCE/dot_config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null
+        # Use . to copy hidden files too
+        cp -r "$DOTFILES_SOURCE/dot_config/nvim/." "$HOME/.config/nvim/" 2>/dev/null
         echo "✅ Copied LazyVim configuration from dotfiles"
       else
         echo "⚠️  No nvim config found in dotfiles, skipping"
@@ -334,7 +335,8 @@ if command -v nvim >/dev/null; then
       echo "⚠️  Could not apply via chezmoi, trying direct copy..."
       if [ -d "$DOTFILES_SOURCE/dot_config/nvim" ]; then
         mkdir -p "$HOME/.config/nvim"
-        cp -r "$DOTFILES_SOURCE/dot_config/nvim/"* "$HOME/.config/nvim/" 2>/dev/null
+        # Use . to copy hidden files too
+        cp -r "$DOTFILES_SOURCE/dot_config/nvim/." "$HOME/.config/nvim/" 2>/dev/null
         echo "✅ Copied LazyVim configuration from dotfiles"
       else
         echo "❌ No nvim config found in dotfiles"
