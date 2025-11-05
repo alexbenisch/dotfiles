@@ -190,22 +190,42 @@ fi
 
 # mise is now installed system-wide by install_system_tool function above
 
+# Apply mise configuration BEFORE installing tools
+echo "📝 Applying mise configuration..."
+if chezmoi source-path >/dev/null 2>&1; then
+  if chezmoi apply "$HOME/.config/mise" 2>/dev/null; then
+    echo "✅ Applied mise configuration from dotfiles"
+  else
+    # Fallback: copy mise config directly
+    if [ -d "$DOTFILES_SOURCE/dot_config/mise" ]; then
+      mkdir -p "$HOME/.config/mise"
+      cp -r "$DOTFILES_SOURCE/dot_config/mise/"* "$HOME/.config/mise/"
+      echo "✅ Copied mise configuration directly"
+    fi
+  fi
+else
+  echo "⚠️  Chezmoi not initialized yet, mise config will be applied later"
+fi
+
 # Install tools via mise if available
 if command -v mise >/dev/null; then
   echo "📦 Installing development tools via mise..."
 
   # Install all tools from config if config exists
   if [ -f "$HOME/.config/mise/config.toml" ] || [ -f "$XDG_CONFIG_HOME/mise/config.toml" ]; then
+    echo "📋 Installing tools from mise config.toml..."
     mise install
     echo "✅ All mise tools installed from config"
   else
-    # Fallback: install essential tools including uv
-    echo "📋 Installing essential tools..."
+    # Fallback: install essential tools if no config found
+    echo "📋 No mise config found, installing essential tools..."
     mise use -g uv@latest
     mise use -g bat@latest
     mise use -g fzf@latest
     mise use -g lsd@latest
     mise use -g ripgrep@latest
+    mise use -g neovim@latest
+    mise use -g node@latest
     mise use -g kubectl@latest
     mise use -g flux2@latest
     mise use -g k9s@latest
@@ -214,6 +234,16 @@ if command -v mise >/dev/null; then
 
   # Check for critical tools and install if missing
   echo "🔍 Checking for critical development tools..."
+
+  if ! command -v nvim >/dev/null; then
+    echo "📝 Installing neovim (text editor)..."
+    mise use -g neovim@latest
+  fi
+
+  if ! command -v node >/dev/null; then
+    echo "📦 Installing node (JavaScript runtime)..."
+    mise use -g node@latest
+  fi
 
   if ! command -v uv >/dev/null; then
     echo "🐍 Installing uv (Python package manager)..."
@@ -394,6 +424,8 @@ echo "Next steps:"
 echo "1. Restart your terminal or run: exec zsh"
 echo "2. Verify installations:"
 echo "   - mise list: show all installed tools"
+echo "   - nvim --version: neovim text editor"
+echo "   - node --version: Node.js runtime"
 echo "   - uv --version: Python package manager"
 echo "   - kubectl version --client: Kubernetes CLI"
 echo "   - flux version: GitOps toolkit"
@@ -402,6 +434,8 @@ echo "   - cz version: commitizen (commit message tool)"
 echo "   - tmux -V: terminal multiplexer"
 echo "3. Additional tools to install manually if needed:"
 echo "   - docker: for containerization"
+echo ""
+echo "If any tool is missing, run: mise install"
 echo ""
 
 exit 0

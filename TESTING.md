@@ -10,7 +10,25 @@ This directory contains automated tests to validate the dotfiles setup and backu
 
 **Purpose**: Integration test that validates the complete backup and apply workflow for ZSH configuration files.
 
+### `test_mise_setup.sh`
+
+**Purpose**: Test that validates mise configuration is applied correctly before tools are installed.
+
 **What it tests**:
+- ✅ Mise config directory is created
+- ✅ Mise config.toml is copied correctly
+- ✅ Config contains neovim
+- ✅ Config contains node
+- ✅ Config contains python
+
+**How to run**:
+```bash
+./test_mise_setup.sh
+```
+
+**Expected output**: All 5 tests should pass.
+
+**What it tests** (test_setup_integration.sh):
 - ✅ Backs up existing `.zshrc` to `bkp_.zshrc`
 - ✅ Backs up existing `.zprofile` to `bkp_.zprofile`
 - ✅ Backs up existing `.zfunc` directory to `bkp_.zfunc`

@@ -2,7 +2,7 @@
 
 ## Quick Start for New Servers
 
-After running the setup script successfully, your shell configuration will be ready, but you may need to install additional tools.
+After running the setup script successfully, your shell configuration will be ready and **all development tools should be automatically installed**.
 
 ### 1. Verify Shell Configuration
 
@@ -17,30 +17,12 @@ You should see:
 - `.bashrc` ✅
 - `.zfunc/` ✅
 
-### 2. Install Development Tools via mise
+### 2. Verify Development Tools
 
-The setup script installs mise, but you may need to install individual tools:
-
-```bash
-# Reload shell to pick up mise
-exec zsh
-
-# Install all tools from mise config
-mise install
-
-# Or install specific tools
-mise use -g neovim@latest
-mise use -g node@latest
-mise use -g python@latest
-mise use -g kubectl@latest
-mise use -g flux2@latest
-mise use -g k9s@latest
-```
-
-### 3. Verify Installations
+The setup script automatically installs all tools from your mise config:
 
 ```bash
-# Check mise tools
+# Check installed tools
 mise list
 
 # Verify specific tools
@@ -50,7 +32,13 @@ python --version
 kubectl version --client
 ```
 
-### 4. Apply Additional Configs (Optional)
+**If any tools are missing**, run:
+```bash
+# Install all tools from mise config
+mise install
+```
+
+### 3. Apply Additional Configs (Optional)
 
 The setup script only applies shell configs. For other configurations:
 
