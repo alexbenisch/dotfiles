@@ -235,6 +235,11 @@ if command -v mise >/dev/null; then
     mise use -g k9s@latest
   fi
 
+  if ! command -v cz >/dev/null; then
+    echo "📝 Installing commitizen (commit message tool)..."
+    mise use -g pipx:commitizen@latest
+  fi
+
   echo "✅ All critical tools checked/installed"
 fi
 
@@ -281,7 +286,7 @@ backup_and_apply() {
   local home_path="$HOME/$file"
 
   if [ -f "$home_path" ]; then
-    backup_name="${TIMESTAMP}_${file}_backup"
+    backup_name="bkp_${file}"
     mv "$home_path" "$HOME/$backup_name"
     echo "💾 Backed up existing $file to ~/$backup_name"
   fi
@@ -294,10 +299,32 @@ backup_and_apply() {
   fi
 }
 
+# Function to backup and apply directory
+backup_and_apply_dir() {
+  local dir="$1"
+  local home_path="$HOME/$dir"
+
+  if [ -d "$home_path" ]; then
+    backup_name="bkp_${dir}"
+    mv "$home_path" "$HOME/$backup_name"
+    echo "💾 Backed up existing $dir to ~/$backup_name"
+  fi
+
+  # Apply from chezmoi
+  if chezmoi apply "$home_path" 2>/dev/null; then
+    echo "✅ Applied $dir from dotfiles"
+  else
+    echo "⚠️  Note: $dir will be applied when you run 'chezmoi apply'"
+  fi
+}
+
 # Apply shell configuration files
 backup_and_apply ".zshrc"
 backup_and_apply ".zprofile"
 backup_and_apply ".bashrc"
+
+# Apply shell configuration directories
+backup_and_apply_dir ".zfunc"
 
 echo ""
 echo "🎉 Dotfiles setup complete!"
@@ -324,6 +351,7 @@ echo "   - uv --version: Python package manager"
 echo "   - kubectl version --client: Kubernetes CLI"
 echo "   - flux version: GitOps toolkit"
 echo "   - k9s version: Kubernetes TUI"
+echo "   - cz version: commitizen (commit message tool)"
 echo "   - tmux -V: terminal multiplexer"
 echo "3. Additional tools to install manually if needed:"
 echo "   - docker: for containerization"
