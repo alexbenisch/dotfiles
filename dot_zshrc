@@ -43,7 +43,7 @@ export NEXTCLOUD="$HOME/Nextcloud/"
 #export GPG_TTY=$(tty)
 #gpg-connect-agent updatestartuptty /bye >/dev/null
 #alias conflicts="systemctl --type=service"
-alias devpod="devpod-cli"
+#alias devpod="devpod-cli"
 export PATH="${PATH}:/home/alex/bin"
 # (optional, aber sinnvoll beim Debuggen oder Testen)
 [[ -f ~/.zshenv ]] && source ~/.zshenv
