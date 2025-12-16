@@ -5,6 +5,18 @@ set -euo pipefail
 XDG_CONFIG_HOME="$HOME/.config"
 DOTFILES_SOURCE="$HOME/.local/share/dotfiles"
 
+# Start ssh-agent if not running (prevents passphrase prompts in devcontainers)
+if [ -z "$SSH_AUTH_SOCK" ]; then
+  # Check if any SSH key exists
+  if ls ~/.ssh/id_* >/dev/null 2>&1; then
+    echo "🔑 Starting ssh-agent..."
+    eval "$(ssh-agent -s)" > /dev/null 2>&1
+    # Try to add the default key
+    ssh-add 2>/dev/null || true
+    echo "✅ ssh-agent started"
+  fi
+fi
+
 # Function to install and make tools available system-wide
 install_system_tool() {
   local tool_name="$1"
