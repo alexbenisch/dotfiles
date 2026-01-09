@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Minimal setup script for devcontainer environments
+# Most tools are pre-installed in the Dockerfile
+# This script only handles things that need runtime configuration
+
+set -euo pipefail
+
+XDG_CONFIG_HOME="$HOME/.config"
+
+echo "🚀 DevContainer post-setup..."
+
+# Start ssh-agent if not running (prevents passphrase prompts)
+if [ -z "$SSH_AUTH_SOCK" ]; then
+  if ls ~/.ssh/id_* >/dev/null 2>&1; then
+    echo "🔑 Starting ssh-agent..."
+    eval "$(ssh-agent -s)" > /dev/null 2>&1
+    ssh-add 2>/dev/null || true
+    echo "✅ ssh-agent started"
+  fi
+fi
+
+# Install Antigen plugin manager for zsh
+# Antigen is required by .zshrc to manage zsh plugins
+if [ ! -d "$HOME/.antigen" ]; then
+  echo "🔌 Installing Antigen plugin manager..."
+  mkdir -p "$HOME/.antigen"
+  curl -L git.io/antigen > "$HOME/.antigen/antigen.zsh"
+  echo "✅ Antigen installed"
+fi
+
+# Setup Zsh Pure prompt
+if [ ! -d "$HOME/.zsh/pure" ]; then
+  echo "🎨 Installing Pure prompt theme..."
+  mkdir -p "$HOME/.zsh"
+  git clone https://github.com/sindresorhus/pure.git "$HOME/.zsh/pure"
+  echo "✅ Pure prompt installed"
+fi
+
+# Install tmux plugin manager (tpm) if needed
+if command -v tmux >/dev/null; then
+  if [ ! -d "$XDG_CONFIG_HOME/tmux/plugins/tpm" ]; then
+    echo "🔌 Installing tmux plugin manager (tpm)..."
+    mkdir -p "$XDG_CONFIG_HOME"/tmux/plugins
+    git clone https://github.com/tmux-plugins/tpm "$XDG_CONFIG_HOME"/tmux/plugins/tpm
+
+    # Install plugins if tmux config exists
+    if [ -f "$XDG_CONFIG_HOME/tmux/tmux.conf" ]; then
+      echo "📦 Installing tmux plugins..."
+      "$XDG_CONFIG_HOME"/tmux/plugins/tpm/bin/install_plugins
+    fi
+    echo "✅ Tmux plugin manager installed"
+  fi
+fi
+
+# Configure mise to trust workspace directories
+# This prevents interactive prompts when using mise in the container
+if command -v mise >/dev/null; then
+  echo "🔧 Configuring mise trust settings..."
+  mise trust /workspaces/* 2>/dev/null || true
+  mise trust "$HOME" 2>/dev/null || true
+  echo "✅ Mise configured"
+fi
+
+# Create necessary directories
+mkdir -p "$HOME/.local/bin"
+mkdir -p "$HOME/bin"
+mkdir -p "$HOME/repos"
+mkdir -p "$HOME/.zfunc"  # For zsh completions
+
+echo ""
+echo "🎉 DevContainer setup complete!"
+echo ""
+echo "✅ Runtime configuration applied"
+echo "✅ Antigen and Pure prompt installed"
+echo "✅ Tmux plugin manager configured"
+echo "✅ Mise trust settings configured"
+echo ""
+echo "Note: Most tools were pre-installed in the Dockerfile"
+echo "      Dotfiles are applied via devcontainer postCreateCommand"
+echo ""
+echo "Verify installations with:"
+echo "  - mise list"
+echo "  - nvim --version"
+echo "  - tmux -V"
+echo ""
+
+exit 0
