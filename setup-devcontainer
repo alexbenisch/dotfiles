@@ -62,6 +62,20 @@ if command -v mise >/dev/null; then
   echo "✅ Mise configured"
 fi
 
+# Install Beads - AI-native issue tracking
+if ! command -v bd >/dev/null; then
+  echo "📿 Installing Beads issue tracker..."
+  curl -sSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash
+  echo "✅ Beads installed"
+fi
+
+# Install Beads git hooks if in a beads-enabled repo
+if command -v bd >/dev/null && [ -d ".beads" ]; then
+  echo "🪝 Installing Beads git hooks..."
+  bd hooks install 2>/dev/null || true
+  echo "✅ Beads hooks installed"
+fi
+
 # Create necessary directories
 mkdir -p "$HOME/.local/bin"
 mkdir -p "$HOME/bin"
@@ -75,6 +89,7 @@ echo "✅ Runtime configuration applied"
 echo "✅ Antigen and Pure prompt installed"
 echo "✅ Tmux plugin manager configured"
 echo "✅ Mise trust settings configured"
+echo "✅ Beads issue tracker installed"
 echo ""
 echo "Note: Most tools were pre-installed in the Dockerfile"
 echo "      Dotfiles are applied via devcontainer postCreateCommand"
@@ -83,6 +98,7 @@ echo "Verify installations with:"
 echo "  - mise list"
 echo "  - nvim --version"
 echo "  - tmux -V"
+echo "  - bd --version"
 echo ""
 
 exit 0
