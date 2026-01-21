@@ -42,6 +42,12 @@ export NEXTCLOUD="$HOME/Nextcloud/"
 #fi
 #export GPG_TTY=$(tty)
 #gpg-connect-agent updatestartuptty /bye >/dev/null
+
+# Start SSH agent if not already running
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    eval $(ssh-agent -s) > /dev/null
+fi
+
 #alias conflicts="systemctl --type=service"
 #alias devpod="devpod-cli"
 export PATH="${PATH}:/home/alex/bin"
