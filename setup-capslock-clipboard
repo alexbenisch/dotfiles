@@ -1,0 +1,217 @@
+#!/bin/bash
+# setup-capslock-clipboard
+#
+# Sets up CapsLock → Clipboard Manager toggle on GNOME via:
+#   - evremap (kernel-level): CapsLock → KEY_F12
+#   - gsettings: disable CapsLock lock behavior (caps:none)
+#   - clipboard-indicator: F12 as toggle shortcut
+#   - autostart entry: re-enable extension after GNOME safe-mode
+
+set -euo pipefail
+
+EXTENSION_ID="clipboard-indicator@tudmotu.com"
+SCHEMA_DIR="$HOME/.local/share/gnome-shell/extensions/$EXTENSION_ID/schemas"
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+info()    { echo "ℹ️  $*"; }
+ok()      { echo "✅ $*"; }
+warn()    { echo "⚠️  $*"; }
+section() { echo ""; echo "── $* ──"; }
+
+require_cmd() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "❌ Required command not found: $1"
+    exit 1
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# 1. Install evremap
+# ---------------------------------------------------------------------------
+section "evremap"
+
+if ! command -v evremap >/dev/null 2>&1; then
+  info "Installing evremap..."
+  if command -v pacman >/dev/null 2>&1; then
+    # Try official repo first, fall back to AUR
+    if pacman -Si evremap &>/dev/null 2>&1; then
+      sudo pacman -S --noconfirm evremap
+    else
+      info "evremap not in official repos, installing from AUR..."
+      require_cmd git
+      tmp=$(mktemp -d)
+      git clone https://aur.archlinux.org/evremap.git "$tmp/evremap"
+      (cd "$tmp/evremap" && makepkg -si --noconfirm)
+      rm -rf "$tmp"
+    fi
+  else
+    warn "Unsupported package manager. Install evremap manually: https://github.com/wez/evremap"
+    exit 1
+  fi
+  ok "evremap installed"
+else
+  ok "evremap already installed ($(evremap --version 2>/dev/null || echo 'version unknown'))"
+fi
+
+# ---------------------------------------------------------------------------
+# 2. Detect keyboards
+# ---------------------------------------------------------------------------
+section "Keyboard detection"
+
+info "Available input devices:"
+sudo evremap list-devices 2>/dev/null || evremap list-devices 2>/dev/null || warn "Could not list devices (try running with sudo)"
+
+# Built-in keyboard — standard name on most laptops
+BUILTIN_NAME="AT Translated Set 2 keyboard"
+
+# Prompt for USB keyboard (optional)
+echo ""
+echo "Built-in keyboard: \"$BUILTIN_NAME\""
+echo ""
+read -rp "Enter USB keyboard device_name (leave blank to skip): " USB_NAME
+read -rp "Enter USB keyboard phys (e.g. usb-0000:00:14.0-6.2.4/input0, blank to skip): " USB_PHYS
+
+# ---------------------------------------------------------------------------
+# 3. Create evremap config files in /etc
+# ---------------------------------------------------------------------------
+section "evremap configs"
+
+sudo tee /etc/evremap-laptop.toml > /dev/null << EOF
+device_name = "$BUILTIN_NAME"
+
+[[remap]]
+input = ["KEY_CAPSLOCK"]
+output = ["KEY_F12"]
+EOF
+ok "Created /etc/evremap-laptop.toml"
+
+if [[ -n "$USB_NAME" ]]; then
+  if [[ -n "$USB_PHYS" ]]; then
+    sudo tee /etc/evremap-usb.toml > /dev/null << EOF
+device_name = "$USB_NAME"
+phys = "$USB_PHYS"
+
+[[remap]]
+input = ["KEY_CAPSLOCK"]
+output = ["KEY_F12"]
+EOF
+  else
+    sudo tee /etc/evremap-usb.toml > /dev/null << EOF
+device_name = "$USB_NAME"
+
+[[remap]]
+input = ["KEY_CAPSLOCK"]
+output = ["KEY_F12"]
+EOF
+  fi
+  ok "Created /etc/evremap-usb.toml"
+fi
+
+# ---------------------------------------------------------------------------
+# 4. Create systemd services
+# ---------------------------------------------------------------------------
+section "systemd services"
+
+create_service() {
+  local name="$1"   # e.g. "laptop" or "usb"
+  local config="$2" # e.g. "/etc/evremap-laptop.toml"
+  local label="$3"  # human label
+
+  sudo tee "/etc/systemd/system/evremap-${name}.service" > /dev/null << EOF
+[Unit]
+Description=evremap keyboard remapping ($label)
+Documentation=https://github.com/wez/evremap
+After=systemd-user-sessions.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/evremap remap $config
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now "evremap-${name}.service"
+  ok "evremap-${name}.service enabled and started"
+}
+
+# Stop old services if they exist (different names from previous setup)
+for old in evremap evremap-air60; do
+  if systemctl is-active --quiet "${old}.service" 2>/dev/null; then
+    warn "Stopping old service: ${old}.service"
+    sudo systemctl disable --now "${old}.service" 2>/dev/null || true
+  fi
+done
+
+create_service "laptop" "/etc/evremap-laptop.toml" "Laptop built-in"
+
+if [[ -n "$USB_NAME" ]]; then
+  create_service "usb" "/etc/evremap-usb.toml" "$USB_NAME"
+fi
+
+# ---------------------------------------------------------------------------
+# 5. Disable CapsLock lock behavior via XKB
+# ---------------------------------------------------------------------------
+section "XKB / CapsLock lock behavior"
+
+current_opts=$(gsettings get org.gnome.desktop.input-sources xkb-options 2>/dev/null || echo "[]")
+
+if echo "$current_opts" | grep -q "caps:none"; then
+  ok "caps:none already set"
+else
+  # Append caps:none to existing options
+  new_opts=$(echo "$current_opts" | sed "s/\]$/, 'caps:none']/; s/^\[\]$/['caps:none']/")
+  gsettings set org.gnome.desktop.input-sources xkb-options "$new_opts"
+  ok "caps:none added to XKB options"
+fi
+
+# ---------------------------------------------------------------------------
+# 6. Set clipboard-indicator toggle shortcut to F12
+# ---------------------------------------------------------------------------
+section "clipboard-indicator shortcut"
+
+if [[ ! -d "$SCHEMA_DIR" ]]; then
+  warn "clipboard-indicator extension not found at $SCHEMA_DIR"
+  warn "Install it from https://extensions.gnome.org/extension/779/clipboard-indicator/"
+  warn "Then re-run this script to set the shortcut."
+else
+  GSETTINGS_SCHEMA_DIR="$SCHEMA_DIR" \
+    gsettings set org.gnome.shell.extensions.clipboard-indicator toggle-menu "['F12']"
+  ok "clipboard-indicator toggle shortcut set to F12"
+
+  gnome-extensions enable "$EXTENSION_ID" 2>/dev/null && ok "Extension enabled" || warn "Could not enable extension (may need GNOME restart)"
+fi
+
+# ---------------------------------------------------------------------------
+# 7. Autostart entry (re-enable after GNOME shell crash / safe mode)
+# ---------------------------------------------------------------------------
+section "Autostart entry"
+
+mkdir -p "$HOME/.config/autostart"
+cat > "$HOME/.config/autostart/clipboard-indicator.desktop" << EOF
+[Desktop Entry]
+Type=Application
+Name=Enable Clipboard Indicator
+Exec=gnome-extensions enable $EXTENSION_ID
+X-GNOME-Autostart-enabled=true
+EOF
+ok "Autostart entry created at ~/.config/autostart/clipboard-indicator.desktop"
+
+# ---------------------------------------------------------------------------
+# Done
+# ---------------------------------------------------------------------------
+echo ""
+echo "🎉 CapsLock → Clipboard toggle setup complete!"
+echo ""
+echo "Verify:"
+echo "  systemctl status evremap-laptop$([ -n "${USB_NAME:-}" ] && echo ' evremap-usb')"
+echo "  gsettings get org.gnome.desktop.input-sources xkb-options"
+echo "  GSETTINGS_SCHEMA_DIR=\"$SCHEMA_DIR\" gsettings get org.gnome.shell.extensions.clipboard-indicator toggle-menu"
+echo ""
+echo "Press CapsLock to toggle the clipboard manager."
