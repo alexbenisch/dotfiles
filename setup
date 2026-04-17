@@ -6,7 +6,7 @@ XDG_CONFIG_HOME="$HOME/.config"
 DOTFILES_SOURCE="$HOME/.local/share/dotfiles"
 
 # Start ssh-agent if not running (prevents passphrase prompts in devcontainers)
-if [ -z "$SSH_AUTH_SOCK" ]; then
+if [ -z "${SSH_AUTH_SOCK:-}" ]; then
   # Check if any SSH key exists
   if ls ~/.ssh/id_* >/dev/null 2>&1; then
     echo "🔑 Starting ssh-agent..."
