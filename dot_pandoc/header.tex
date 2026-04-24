@@ -1,0 +1,19 @@
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+% Full-width longtables (pandoc default for markdown tables)
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+
+% Full-width regular tables
+\let\oldtabular\tabular
+\let\endoldtabular\endtabular
+\renewenvironment{tabular}[2][]{%
+  \begin{tabularx}{\linewidth}{#2}%
+}{%
+  \end{tabularx}%
+}
+
+% Horizontal rules span full text width
+\let\oldrule\rule
+\renewcommand{\rule}[2]{\noindent\oldrule{\linewidth}{#2}}

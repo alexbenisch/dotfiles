@@ -1,0 +1,10 @@
+pdf-engine: xelatex
+
+variables:
+  mainfont: "Noto Sans"
+  monofont: "Noto Sans Mono"
+  papersize: a4
+  geometry: "margin=2cm"
+
+include-in-header:
+  - header.tex
