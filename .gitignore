@@ -28,6 +28,9 @@ local/
 
 # Chezmoi state (managed by chezmoi)
 .chezmoi*
+# ...but the scripts in here are config, not state. Without this git prunes
+# the whole directory and new scripts silently fail to stage.
+!.chezmoiscripts/
 
 # System-specific configurations
 **/private/
