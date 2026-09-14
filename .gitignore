@@ -35,3 +35,7 @@ local/
 # System-specific configurations
 **/private/
 **/*private*
+
+# Agent instructions for this repo -- local only. Anchored with a leading slash
+# so it applies to the root file only and leaves docs/CLAUDE.md tracked.
+/CLAUDE.md
