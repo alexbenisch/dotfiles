@@ -1,0 +1,21 @@
+[Unit]
+# The headset is already trusted and /etc/bluetooth/main.conf has
+# AutoEnable=true -- but that only powers the *adapter* on at boot. It does not
+# make BlueZ reach out to a known device. This unit does the reaching out.
+Description=Connect JBL Quantum 360P headset
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+# Retry for ~30s: bluetoothd and the adapter are often not ready the instant
+# the session starts, and the headset may be powering up at the same time.
+# Always exits 0 -- a headset that is simply switched off is not a failure.
+ExecStart=/usr/bin/bash -c 'mac=B8:17:43:5B:55:26; \
+  for i in $(seq 1 10); do \
+    bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes" && exit 0; \
+    bluetoothctl connect "$mac" >/dev/null 2>&1 && exit 0; \
+    sleep 3; \
+  done; exit 0'
+
+[Install]
+WantedBy=default.target
