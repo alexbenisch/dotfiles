@@ -1,0 +1,6 @@
+variables:
+  colorlinks: true
+  urlcolor: cvblue
+  linkcolor: cvblue
+include-in-header:
+  - /home/alex/repos/applications/cv_style.tex

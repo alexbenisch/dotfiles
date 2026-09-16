@@ -1,0 +1,8 @@
+\usepackage{fontspec}
+\setmainfont{Liberation Sans}
+\setmonofont{Liberation Mono}
+\directlua{luaotfload.add_fallback
+   ("emojifallback",
+    {"NotoColorEmoji:mode=harf;"}
+   )}
+\setmainfont{Liberation Sans}[RawFeature={fallback=emojifallback}]
