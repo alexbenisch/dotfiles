@@ -6,14 +6,10 @@
 \setlength{\LTleft}{0pt}
 \setlength{\LTright}{0pt}
 
-% Full-width regular tables
-\let\oldtabular\tabular
-\let\endoldtabular\endtabular
-\renewenvironment{tabular}[2][]{%
-  \begin{tabularx}{\linewidth}{#2}%
-}{%
-  \end{tabularx}%
-}
+% Arrows and similar symbols are missing from Noto Sans; map them to math
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
 
 % Horizontal rules span full text width
 \let\oldrule\rule

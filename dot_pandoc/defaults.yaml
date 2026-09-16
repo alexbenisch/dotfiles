@@ -7,4 +7,4 @@ variables:
   geometry: "margin=2cm"
 
 include-in-header:
-  - header.tex
+  - ${USERDATA}/header.tex
