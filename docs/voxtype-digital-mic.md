@@ -133,14 +133,14 @@ Restore `~/.config/voxtype/config.toml.bak.<timestamp>` (or set `device = "defau
 
 ## Foot Pedal (voxtype-pedal.service)
 
-A Grundig Digta Foot Control 540 USB (`15d8:0024`) drives voxtype through `~/.local/bin/voxtype-pedal` (systemd user unit `voxtype-pedal.service`; both tracked here under `dot_local/bin/` and `dot_config/systemd/user/`). The pedal is a vendor HID device with no evdev node; a udev rule grants `uaccess` and creates `/dev/grundig-pedal → hidrawN`. It lives outside `$HOME`, so it is not managed by chezmoi. `/etc/udev/rules.d/70-grundig-footpedal.rules`:
+A Grundig Digta Foot Control 540 USB (`15d8:0024`) drives voxtype through `~/.local/bin/voxtype-pedal` (systemd user unit `voxtype-pedal.service`; both tracked here under `dot_local/bin/` and `dot_config/systemd/user/`). The pedal is a vendor HID device with no evdev node; a udev rule grants `uaccess` and creates `/dev/grundig-pedal → hidrawN`. It lives outside `$HOME`, so chezmoi installs it via `.chezmoiscripts/run_onchange_after_udev-grundig-footpedal.sh`, which only calls sudo when the installed rule is missing or differs. `/etc/udev/rules.d/70-grundig-footpedal.rules`:
 
 ```
 # Grundig Digta Foot Control 540 USB: give the logged-in user access to its hidraw node
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="15d8", ATTRS{idProduct}=="0024", TAG+="uaccess", SYMLINK+="grundig-pedal"
 ```
 
-Reload with `sudo udevadm control --reload && sudo udevadm trigger`, or replug the pedal.
+The script reloads udev itself; after a manual edit, run `sudo udevadm control --reload && sudo udevadm trigger`, or replug the pedal.
 
 | Byte 0 bit | Action |
 |------------|--------|
