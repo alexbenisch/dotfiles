@@ -133,7 +133,14 @@ Restore `~/.config/voxtype/config.toml.bak.<timestamp>` (or set `device = "defau
 
 ## Foot Pedal (voxtype-pedal.service)
 
-A Grundig Digta Foot Control 540 USB (`15d8:0024`) drives voxtype through `~/.local/bin/voxtype-pedal` (systemd user unit `voxtype-pedal.service`). The pedal is a vendor HID device with no evdev node; a udev rule (`/etc/udev/rules.d/`) grants `uaccess` and creates `/dev/grundig-pedal → hidrawN`.
+A Grundig Digta Foot Control 540 USB (`15d8:0024`) drives voxtype through `~/.local/bin/voxtype-pedal` (systemd user unit `voxtype-pedal.service`; both tracked here under `dot_local/bin/` and `dot_config/systemd/user/`). The pedal is a vendor HID device with no evdev node; a udev rule grants `uaccess` and creates `/dev/grundig-pedal → hidrawN`. It lives outside `$HOME`, so it is not managed by chezmoi. `/etc/udev/rules.d/70-grundig-footpedal.rules`:
+
+```
+# Grundig Digta Foot Control 540 USB: give the logged-in user access to its hidraw node
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="15d8", ATTRS{idProduct}=="0024", TAG+="uaccess", SYMLINK+="grundig-pedal"
+```
+
+Reload with `sudo udevadm control --reload && sudo udevadm trigger`, or replug the pedal.
 
 | Byte 0 bit | Action |
 |------------|--------|
@@ -153,3 +160,24 @@ journalctl --user -u voxtype -f           # "Recording started (external trigger
 ```
 
 The pedal does not answer HID GET_REPORT/GET_FEATURE (`Broken pipe`) — that's normal, only the interrupt input reports matter. The bridge ignores `voxtype` exit codes, so audio errors only show up in the `voxtype` journal, not the pedal's.
+
+### Pedal dead after login: ordering cycle
+
+Symptom (2026-09-28): the pedal did nothing after a reboot; `voxtype-pedal.service` was `inactive (dead)` and the journal said:
+
+```
+graphical-session.target: Found ordering cycle: voxtype-pedal.service/start after voxtype.service/start after graphical-session.target/start - after voxtype-pedal.service
+graphical-session.target: Job voxtype-pedal.service/start deleted to break ordering cycle
+```
+
+A target implicitly orders itself `After=` every unit it `Wants=` (via `WantedBy=`), unless that unit already declares an ordering against the target. The unit only had `After=voxtype.service`, and `voxtype.service` is `After=graphical-session.target`, so: target → pedal → voxtype → target. systemd breaks the cycle by dropping the pedal job.
+
+Fix: order the pedal against the target explicitly, as `voxtype.service` does:
+
+```ini
+After=graphical-session.target voxtype.service
+```
+
+Verify with `systemd-analyze --user verify graphical-session.target` (no "cycle" output), then `systemctl --user daemon-reload && systemctl --user start voxtype-pedal`.
+
+The `ALSA lib pcm_dmix.c ... unable to open slave` lines logged at every recording start appear to be harmless: they come just before `Using audio device: dmic`, and recording and transcription work normally.

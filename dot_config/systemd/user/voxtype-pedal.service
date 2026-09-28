@@ -1,0 +1,13 @@
+[Unit]
+Description=Grundig foot pedal bridge for voxtype
+After=graphical-session.target voxtype.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/voxtype-pedal
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

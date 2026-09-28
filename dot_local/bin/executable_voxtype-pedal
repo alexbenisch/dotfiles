@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Bridge a Grundig Digta Foot Control 540 (vendor HID, no evdev) to voxtype.
+
+Each report is 2 bytes; byte 0 is a bitmask of pressed pedals.
+"""
+import os
+import subprocess
+import sys
+import time
+
+DEVICE = "/dev/grundig-pedal"
+
+# bit -> (action on press, action on release)
+PEDALS = {
+    0x02: (["record", "start"], ["record", "stop"]),  # push-to-talk
+    0x01: (["record", "cancel"], None),               # cancel
+    0x04: (["record", "toggle"], None),               # hands-free toggle
+}
+
+
+def voxtype(args):
+    subprocess.run(["voxtype", *args], check=False)
+
+
+def run(fd):
+    prev = 0
+    while True:
+        report = os.read(fd, 64)
+        if not report:
+            raise OSError("device closed")
+        state = report[0]
+        for bit, (on_press, on_release) in PEDALS.items():
+            if state & bit and not prev & bit:
+                voxtype(on_press)
+            elif prev & bit and not state & bit and on_release:
+                voxtype(on_release)
+        prev = state
+
+
+def main():
+    while True:
+        try:
+            fd = os.open(DEVICE, os.O_RDONLY)
+        except OSError:
+            time.sleep(2)  # pedal unplugged; wait for it
+            continue
+        print(f"reading {DEVICE}", file=sys.stderr, flush=True)
+        try:
+            run(fd)
+        except OSError as e:
+            print(f"lost pedal: {e}", file=sys.stderr, flush=True)
+        finally:
+            os.close(fd)
+
+
+if __name__ == "__main__":
+    main()
